@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GOATlist: who's the greatest?</title>
+<meta name="description" content="Pick one. GOATlist runs a quick knockout tournament on your picks and finds your top 10, then shows how it stacks up against everyone else.">
+<meta property="og:title" content="GOATlist: who's the greatest?">
+<meta property="og:description" content="Tap to pick. Find your top 10 in sports, music, movies and more, and see how it stacks up against everyone.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://goatlists.netlify.app/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#08080c">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08080c;--panel:#111118;--panel2:#17171f;--line:#24242f;--line2:#33333f;
+  --text:#f4f4f7;--muted:#8d8d9c;--dim:#5d5d6b;
+  --purple:#6d4aff;--purple2:#8b6dff;--purpleBg:#1c1533;
+  --red:#e5484d;--redBg:#2a1215;--gold:#f5c542;--green:#3ecf8e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px 70px}
+[hidden]{display:none!important}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 0 14px;gap:16px;flex-wrap:wrap}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:1px;line-height:1;display:flex;align-items:baseline;cursor:pointer}
+.logo b{color:var(--purple2);font-weight:400}
+.logo i{font-style:normal;color:var(--red)}
+.tagline{font-size:12px;color:var(--muted);margin-left:12px;letter-spacing:.3px;font-family:Inter,sans-serif}
+nav.views{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;flex-wrap:wrap}
+nav.views button{padding:8px 14px;border-radius:9px;font-size:14px;font-weight:600;color:var(--muted);position:relative}
+nav.views button.on{background:var(--purple);color:#fff}
+.badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;line-height:18px;margin-left:6px}
+
+.cats{display:flex;gap:8px;overflow-x:auto;padding:6px 0 10px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex:none;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:14px;color:var(--muted)}
+.cat.on{border-color:var(--purple);color:#fff;background:var(--purpleBg)}
+.subs{display:flex;gap:14px 22px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.sgroup{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sgroup .gl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-right:4px}
+.sub{padding:6px 13px;border-radius:999px;border:1px solid var(--line);font-size:13px;color:var(--muted);font-weight:500}
+.sub.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+.banner{font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:18px;display:none}
+.banner.show{display:block}
+.banner.warn{color:#ffb4b6;border-color:#4a1d20;background:var(--redBg)}
+
+.statrow{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--muted)}
+.stat strong{color:var(--text);font-size:15px;margin-right:4px}
+.linkbtn{margin-left:auto;font-size:13px;color:var(--purple2);font-weight:600;padding:8px 4px}
+.linkbtn:hover{text-decoration:underline}
+
+.prompt{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.5px;text-align:center;margin-bottom:16px}
+.prompt span{color:var(--purple2)}
+.fo-tag{display:block;font-family:Inter,sans-serif;font-size:12px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.arena{display:grid;grid-template-columns:1fr 64px 1fr;align-items:stretch}
+.pick{position:relative;overflow:hidden;background:var(--panel);border:2px solid var(--line);border-radius:18px;min-height:290px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 18px;text-align:center;transition:transform .12s,border-color .15s,background .15s,opacity .2s}
+.pick::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--c,var(--purple))}
+.pick::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--c,transparent),transparent 65%);opacity:.13;pointer-events:none}
+.pick:hover:not(.locked){border-color:var(--purple);transform:translateY(-2px)}
+.pick:active:not(.locked){transform:scale(.98)}
+.pick.win{border-color:var(--purple);background:var(--purpleBg)}
+.pick.lose{opacity:.5}
+.pick.locked{cursor:default}
+.mono{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:16px;background:var(--c,var(--panel2));color:#fff;border:3px solid rgba(255,255,255,.12);text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.pname{font-size:clamp(20px,3vw,28px);font-weight:700;line-height:1.15;margin-bottom:8px;position:relative}
+.pmeta{font-size:13px;color:var(--muted);position:relative}
+.pmeta .chip{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--line2);margin-right:6px;font-size:11px;font-weight:600;color:var(--text)}
+.pct{font-family:'Bebas Neue',sans-serif;font-size:54px;line-height:1;margin-top:14px;display:none;position:relative}
+.pick.win .pct{color:var(--purple2)}
+.revealed .pct{display:block}
+.key{position:absolute;bottom:12px;font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.vs{display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--red)}
+
+.result{margin-top:18px;min-height:60px}
+.bar{height:10px;border-radius:5px;background:var(--line2);overflow:hidden;display:flex}
+.bar .l{background:var(--purple);transition:width .5s}
+.bar .r{background:var(--red);transition:width .5s;margin-left:auto}
+.split{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;gap:10px}
+.verdict{text-align:center;font-size:14px;color:var(--muted);margin-top:12px}
+.verdict strong{color:var(--text)}
+.actions{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:11px;font-weight:600;font-size:14px;border:1px solid var(--line2);background:var(--panel)}
+.btn:hover{border-color:var(--purple)}
+.btn.primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.btn.primary:hover{background:var(--purple2)}
+.btn.small{padding:7px 12px;font-size:13px;border-radius:9px}
+.btn.ok{border-color:#1d5e43;color:var(--green)}
+.btn.no{border-color:#5a2226;color:#ff8a8e}
+.timer{height:3px;background:var(--line);border-radius:2px;overflow:hidden;width:180px;margin:12px auto 0}
+.timer div{height:100%;background:var(--purple2);width:0}
+.timer.run div{width:100%;transition:width 1.6s linear}
+
+.hero{text-align:center;padding:26px 0 30px}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(44px,8vw,76px);line-height:.95;letter-spacing:1px}
+.hero h1 span{color:var(--purple2)}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p{color:var(--muted);margin:12px auto 20px;max-width:520px;font-size:15px;line-height:1.6}
+.sectitle{display:flex;align-items:baseline;justify-content:space-between;margin:8px 0 14px;gap:10px}
+.sectitle h2{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:30px;letter-spacing:.5px}
+.sectitle h2 span{color:var(--gold)}
+.sectitle small{color:var(--muted);font-size:13px}
+.fogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:34px}
+.fo{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .15s,transform .12s}
+.fo:hover{border-color:var(--purple);transform:translateY(-2px)}
+.fo .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;justify-content:space-between}
+.fo .mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:12px}
+.fo .side{display:flex;align-items:center;gap:8px;min-width:0}
+.fo .side.r{flex-direction:row-reverse;text-align:right}
+.fo .dot{flex:none;width:34px;height:34px;border-radius:50%;background:var(--c,var(--panel2));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;color:#fff}
+.fo .nm{font-weight:600;font-size:14px;line-height:1.2}
+.fo .v{font-family:'Bebas Neue',sans-serif;color:var(--red);font-size:18px}
+.fo .split{margin-top:5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left;border-top:4px solid var(--c)}
+.tile:hover{border-color:var(--purple);border-top-color:var(--c)}
+.tile b{display:block;font-size:16px;margin-bottom:4px}
+.tile span{font-size:12px;color:var(--muted)}
+
+.rankhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.rankhead h2{font-family:'Bebas Neue',sans-serif;font-size:34px;font-weight:400;letter-spacing:.5px}
+.rankhead h2 span{color:var(--purple2)}
+.rh-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toggle{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.toggle button{padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);border:1px solid transparent}
+.toggle button.on{background:var(--panel2);color:var(--text);border-color:var(--line2)}
+.list{display:grid;gap:8px}
+.top10{margin-bottom:26px}
+.row{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 16px;border-left:4px solid var(--c,var(--line))}
+.row .rk{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--dim);text-align:center}
+.top10 .row:nth-child(1) .rk{color:var(--gold)}
+.top10 .row:nth-child(2) .rk,.top10 .row:nth-child(3) .rk{color:var(--purple2)}
+.row .nm{font-weight:600;font-size:16px}
+.row .sm{font-size:12px;color:var(--muted);margin-top:2px}
+.row .wr{text-align:right;font-weight:700;font-size:15px}
+.row .wr small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.rest-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:6px 0 10px}
+.rest .row{padding:7px 16px;background:transparent}
+.rest .row .rk{font-size:22px}
+.rest .row .nm{font-size:14px;font-weight:500}
+.empty{text-align:center;color:var(--muted);padding:44px 20px;border:1px dashed var(--line2);border-radius:14px;line-height:1.6}
+.empty .btn{margin-top:14px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px}
+.panel h3{font-size:15px;margin-bottom:12px}
+.sharecard{background:linear-gradient(160deg,#17112b,#0b0b10 70%);border:1px solid #2d2350;border-radius:16px;padding:22px;max-width:420px}
+.sharecard .sc-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+.sharecard .sc-logo b{color:var(--purple2);font-weight:400}.sharecard .sc-logo i{font-style:normal;color:var(--red)}
+.sharecard h4{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:28px;margin:6px 0 12px}
+.sharecard ol{list-style:none;display:grid;gap:5px}
+.sharecard li{display:flex;gap:10px;align-items:center;font-size:14px}
+.sharecard li span{font-family:'Bebas Neue',sans-serif;width:22px;color:var(--purple2);font-size:18px}
+.sharecard li:first-child span{color:var(--gold)}
+.sharecard .sc-foot{font-size:11px;color:var(--muted);margin-top:14px}
+.share-actions{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap}
+.copied{font-size:13px;color:var(--green)}
+
+.field{display:grid;gap:6px;margin-bottom:12px}
+.field label{font-size:12px;color:var(--muted)}
+.field input,.field select{background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14px;width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:var(--purple)}
+.ferr{font-size:13px;color:#ff8a8e;min-height:18px}
+.fok{font-size:13px;color:var(--green)}
+
+.cmp-top{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.cmp-top select{background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14px;min-width:220px}
+.match{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.mcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.mcard .big{font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:1;color:var(--purple2)}
+.mcard .lbl{font-size:12px;color:var(--muted);margin-top:4px}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.twocol h4{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600}
+.twocol .row{grid-template-columns:36px 1fr;padding:8px 12px}
+.twocol .row .rk{font-size:22px}
+.twocol .row .nm{font-size:14px}
+.twocol .row.shared{background:var(--purpleBg);border-color:#3a2d6b}
+.dis{display:grid;gap:8px}
+.disrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
+.disrow .who{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.disrow .sub2{grid-column:1/-1;font-size:11px;color:var(--dim)}
+.sugg{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.sugg .sm{font-size:12px;color:var(--muted);margin-top:2px}
+
+.accs{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:12px;position:relative;max-width:340px}
+.acc{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:rgba(245,197,66,.1);border:1px solid rgba(245,197,66,.35);color:var(--gold)}
+.acc.hof{background:rgba(139,109,255,.14);border-color:rgba(139,109,255,.45);color:#c3b4ff}
+.tape{max-width:420px;margin:16px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.tt-head{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);text-align:center;margin-bottom:6px}
+.tt-row{display:grid;grid-template-columns:1fr 1.4fr 1fr;align-items:center;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.tt-row span{text-align:center;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.tt-row span.lead{color:var(--gold);font-weight:700}
+.tt-row em{font-style:normal;text-align:center;font-size:12px;color:var(--text)}
+.tt-foot{font-size:10px;color:var(--dim);text-align:center;margin-top:6px}
+.row .acl{font-size:11px;color:var(--gold);margin-top:3px;opacity:.9}
+@media (max-width:680px){.pick .accs{display:none}}
+@media (max-width:680px){
+  .arena{grid-template-columns:1fr;gap:10px}
+  .vs{font-size:26px;height:24px}
+  .pick{min-height:170px;padding:22px 14px}
+  .mono{width:60px;height:60px;font-size:26px;margin-bottom:10px}
+  .key{display:none}
+  .tagline{display:none}
+  .twocol{grid-template-columns:1fr}
+}
+.pmeta .info{color:var(--text);opacity:.85}
+.aw{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:rgba(245,197,66,.1);border:1px solid rgba(245,197,66,.35);color:var(--gold);margin-right:4px}
+.stat.lvl{display:flex;align-items:center;gap:8px}
+.xpbar{display:inline-block;width:70px;height:6px;border-radius:3px;background:var(--line2);overflow:hidden}
+.xpbar span{display:block;height:100%;background:linear-gradient(90deg,var(--purple),var(--purple2))}
+.timer.run div{transition:width .95s linear}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid #4d3f12;color:var(--text);padding:12px 18px;border-radius:12px;font-size:14px;transition:all .25s;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast strong{color:var(--gold)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.mestats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:30px}
+.bdg{border:1px dashed var(--line2);border-radius:12px;padding:10px 12px;opacity:.45}
+.bdg b{display:block;font-size:13px}
+.bdg small{font-size:11px;color:var(--muted)}
+.bdg.on{opacity:1;border-style:solid;border-color:#4d3f12;background:rgba(245,197,66,.07)}
+.bdg.on b{color:var(--gold)}
+.megrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.mecard{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:14px;padding:14px 16px}
+.mehead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:10px}
+.mehead b{display:block;font-size:15px}
+.mehead small{font-size:12px;color:var(--muted)}
+.mebtns{display:flex;gap:6px}
+.mebtns .btn{padding:5px 9px;font-size:12px}
+.mecard ol,.clist{list-style:none;display:grid;gap:4px}
+.mecard li,.clist li{display:flex;gap:10px;font-size:14px;align-items:center}
+.mecard li span,.clist li span{font-family:'Bebas Neue',sans-serif;width:20px;color:var(--purple2);font-size:17px}
+.mecard li:first-child span{color:var(--gold)}
+.clist li.hit{color:var(--gold)}
+.buildgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:start}
+.slots{display:grid;gap:6px}
+.slot{display:flex;align-items:center;gap:10px;min-height:48px;border:1px dashed var(--line2);border-radius:12px;padding:6px 10px;transition:border-color .12s,background .12s}
+.slot.full{border-style:solid;background:var(--panel);border-left:4px solid var(--c);cursor:grab}
+.slot.over{border-color:var(--purple);background:var(--purpleBg)}
+.slot .sn{font-family:'Bebas Neue',sans-serif;font-size:22px;width:24px;text-align:center;color:var(--dim)}
+.slot:nth-child(1) .sn{color:var(--gold)}
+.slot .snm{font-weight:600;font-size:14px;flex:1;min-width:0}
+.slot .cr{font-size:11px;color:var(--muted);white-space:nowrap}
+.slot .ph{font-size:13px;color:var(--dim)}
+.sbtns{display:flex;gap:2px}
+.sbtns button{width:26px;height:26px;border-radius:7px;color:var(--muted);font-size:14px}
+.sbtns button:hover{background:var(--panel2);color:var(--text)}
+.dot2{flex:none;width:28px;height:28px;border-radius:50%;background:var(--c);display:inline-flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff}
+.poolwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;position:sticky;top:12px}
+.search{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:10px}
+.search:focus{outline:none;border-color:var(--purple)}
+.pool{display:flex;flex-wrap:wrap;gap:6px;max-height:520px;overflow:auto}
+.pitem{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;border:1px solid var(--line2);background:var(--panel2);font-size:13px;font-weight:500;cursor:grab}
+.pitem:hover{border-color:var(--purple)}
+@media (max-width:680px){
+  .arena{grid-template-columns:1fr 26px 1fr!important;gap:0!important}
+  .vs{font-size:20px!important;height:auto!important}
+  .pick{min-height:200px!important;padding:18px 8px!important;border-radius:14px}
+  .mono{width:50px!important;height:50px!important;font-size:22px!important;margin-bottom:10px!important}
+  .pname{font-size:16px!important}
+  .pmeta{font-size:11px}
+  .pct{font-size:36px}
+  .tape{font-size:13px}
+  .buildgrid{grid-template-columns:1fr}
+  .poolwrap{position:static}
+  .pool{max-height:260px}
+  nav.views button{padding:7px 10px;font-size:13px}
+}
+.snav{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;width:100%}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px}
+.seg button{padding:7px 16px;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--purple);color:#fff}
+.sporttabs{display:flex;gap:6px}
+.fsel{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fsel label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.fsel select{background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:6px 10px;font-size:13px;color:var(--text)}
+.fsel select:focus{outline:none;border-color:var(--purple)}
+.fsel .linkbtn{margin-left:0;padding:4px}
+.fnote{font-size:12px;color:var(--muted)}
+.lgchip{background:var(--purpleBg)!important;border-color:#3a2d6b!important;color:#c3b4ff!important}
+.mx{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mx-h{font-weight:700;font-size:13px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.mx-h span{font-size:10px;color:var(--muted);font-weight:600;margin-left:4px}
+.mx-row{font-size:13px;color:var(--muted);padding:3px 0}
+.mx-row b{color:var(--gold);display:inline-block;min-width:26px}
+@media (max-width:680px){.snav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.snav>*{flex:none}.fsel{flex-wrap:nowrap}}
+.chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.chips .gl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+.fchip{padding:5px 11px;border-radius:999px;border:1px dashed var(--line2);font-size:12px;color:var(--muted);font-weight:500}
+.fchip.on{border-style:solid;border-color:var(--purple);color:#fff;background:var(--purpleBg)}
+.mono.ph-on,.dot.ph-on,.dot2.ph-on{background:var(--panel2);overflow:hidden;padding:0}
+.mono img,.dot img,.dot2 img,.thumb img,.phbig img{width:100%;height:100%;object-fit:cover;display:block}
+.mono.ph-on{width:132px;height:132px;border-radius:22px;border:3px solid var(--c)}
+.thumb{display:inline-block;width:26px;height:26px;border-radius:50%;overflow:hidden;vertical-align:-7px;margin-right:8px;border:2px solid var(--c)}
+.phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.phcell{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.phbig{width:72px;height:72px;border-radius:14px;background:var(--c);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;overflow:hidden}
+.phbig.ph-on{background:var(--panel2)}
+.phn{font-size:12px;font-weight:600;line-height:1.2;min-height:28px}
+.phcell .btn{cursor:pointer}
+#phSel{background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:8px 10px;font-size:14px}
+@media (max-width:680px){.mono.ph-on{width:80px!important;height:80px!important;border-radius:16px}.chips{flex-wrap:nowrap}}
+.friends{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:8px}
+.fr-ok{color:var(--green)}
+.fr-no{color:#ff8a8e}
+.timer.run div{transition:width .95s linear}
+
+/* v8 declutter */
+.prog{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:18px}
+.prog-top,.prog-bot{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.prog-top b{color:var(--text)}
+.prog-top b.ok{color:var(--green)}
+.prog-bar{height:8px;border-radius:4px;background:var(--line2);overflow:hidden;margin:9px 0 6px}
+.prog-bar div{height:100%;background:linear-gradient(90deg,var(--purple),var(--purple2));transition:width .4s}
+.prog-bot{font-size:12px}
+.prog-bot .linkbtn{padding:2px 0}
+.reveal{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}
+.reveal .sharecard{width:100%;max-width:440px}
+.sharecard li em{font-style:normal;font-size:10px;color:var(--red);border:1px solid #5a2226;border-radius:999px;padding:0 6px;margin-left:auto}
+.suggest-foot{text-align:center;margin-top:28px}
+.suggest-foot .linkbtn{color:var(--dim);font-weight:500;font-size:12px;margin:0}
+.tiles.big{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tiles.big .tile{padding:20px 18px;border-top-width:5px}
+.tiles.big .tile b{font-size:18px;margin-bottom:6px}
+.fogrid.three{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.hero p{max-width:480px}
+.meline{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px;color:var(--muted);padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+.meline b{color:var(--text)}
+.badgeline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:28px}
+.bpill{font-size:12px;font-weight:600;color:var(--gold);border:1px solid #4d3f12;background:rgba(245,197,66,.07);border-radius:999px;padding:4px 10px}
+.bnone{font-size:12px;color:var(--dim);margin-right:8px}
+.cmp-top select{margin-right:6px}
+#cmpSub{background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14px}
+.pick .accs{max-width:300px}
+/* v9 contenders + gauntlet */
+#voteView.picking #arena,#voteView.picking #tape,#voteView.picking #result,#voteView.picking #prompt,#voteView.picking .suggest-foot,#voteView.picking #suggestBox{display:none}
+.picker{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:20px}
+.picker h2{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:32px;letter-spacing:.5px;margin-bottom:6px}
+.picker p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.picker p b{color:var(--text)}
+.pgrid{display:flex;flex-wrap:wrap;gap:7px;max-height:420px;overflow:auto;padding:2px}
+.pchip{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;border:1px solid var(--line2);background:var(--panel2);font-size:13px;font-weight:500}
+.pchip:hover{border-color:var(--purple)}
+.pchip.on{background:var(--purpleBg);border-color:var(--purple2);color:#fff}
+.pchip.on .dot2{outline:2px solid var(--purple2)}
+.pbar{display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.pbar span{margin-right:auto}
+.pbar b{color:var(--text);font-size:18px}
+.btn[disabled]{opacity:.4;cursor:default}
+.gline{display:flex;justify-content:center;gap:18px;margin-top:10px;flex-wrap:wrap}
+.gline .linkbtn,.rowg{margin:0;font-size:12px;color:var(--muted);font-weight:500}
+.gline .linkbtn:hover,.rowg:hover{color:var(--purple2)}
+.rowg{display:block;padding:2px 0 0;margin-left:auto}
+.prog.gaunt{border-color:#3a2d6b;background:var(--purpleBg)}
+
+.logo b{color:var(--purple2)}
+.early{font-size:12px;color:var(--gold);border:1px solid #4d3f12;background:rgba(245,197,66,.07);border-radius:999px;padding:4px 10px}
+.acct{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:10px;font-size:14px;color:var(--muted)}
+.acct form,.acct>span{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.acct b{color:var(--text)}
+.acct input{background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:8px 10px;font-size:14px;min-width:220px;color:var(--text)}
+.acct input:focus{outline:none;border-color:var(--purple)}
+.acct .linkbtn{margin:0}
+.acct:has(.linkbtn[data-signout]){display:flex;justify-content:space-between;align-items:center}
+footer.site{border-top:1px solid var(--line);margin-top:50px;padding:22px 0 10px;display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--dim)}
+footer.site a{color:var(--muted);text-decoration:none}
+footer.site a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" data-home="1">GOAT<b>list</b><span class="tagline">The greatest, ranked by everyone</span></div>
+    <nav class="views" id="views"></nav>
+  </header>
+
+  <div id="catnav">
+    <div class="cats" id="cats"></div>
+    <div class="subs" id="subs"></div>
+  </div>
+
+  <div class="banner" id="banner"></div>
+
+  <section id="homeView"></section>
+
+  <section id="voteView" hidden>
+    <div id="reveal"></div>
+    <div id="stats"></div>
+    <div class="prompt" id="prompt">Who's <span>greater</span>?</div>
+    <div class="arena" id="arena">
+      <button class="pick" id="pickA"><div class="mono"></div><div class="pname"></div><div class="pmeta"></div><div class="accs"></div><div class="pct"></div><span class="key">&larr;</span></button>
+      <div class="vs">VS</div>
+      <button class="pick" id="pickB"><div class="mono"></div><div class="pname"></div><div class="pmeta"></div><div class="accs"></div><div class="pct"></div><span class="key">&rarr;</span></button>
+    </div>
+    <div id="tape"></div>
+    <div class="result" id="result"></div>
+    <div class="suggest-foot"><button class="linkbtn" data-suggest="1">Missing someone? Suggest it</button></div>
+    <div id="suggestBox"></div>
+  </section>
+
+  <section id="rankView" hidden></section>
+  <section id="buildView" hidden></section>
+  <section id="cmpView" hidden></section>
+  <section id="meView" hidden></section>
+  <section id="adminView" hidden></section>
+</div>
+<footer class="site wrap" style="padding-left:20px;padding-right:20px"><span>&copy; GOATlist</span><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><span>Rankings come from real votes. No fake numbers.</span></footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const TEAMC = {
+ CHI:'#CE1141',LAL:'#6B3FA0',BOS:'#007A33',GSW:'#1D5FC2',SAS:'#8A8D8F',HOU:'#CE1141',OKC:'#007AC1',PHX:'#E56020',MIL:'#00703C',MIN:'#2C7BB6',DAL:'#0064B1',CLE:'#860038',PHI:'#006BB6',UTA:'#753BBD',NYK:'#F58426',MIA:'#98002E',DET:'#C8102E',ATL:'#E03A3E',DEN:'#D9A417',LAC:'#C8102E',POR:'#E03A3E',BKN:'#777777',SAC:'#5A2D81',ORL:'#0077C0',IND:'#D9A021',TOR:'#CE1141',MEM:'#5D76A9',NOP:'#85714D',WAS:'#E31837',
+ EDM:'#FF4C00',PIT:'#D9A10F',BOSh:'#D9A017',DETh:'#CE1126',WSH:'#C8102E',MTL:'#AF1E2D',NJD:'#CE1126',BUF:'#2E5BAA',COL:'#8B2F4E',CHIh:'#CF0A2C',NYI:'#F47D30',TORh:'#1F5BA8',TBL:'#3366CC',
+ NYY:'#3A5DAE',SF:'#FD5A1E',ATLb:'#CE1141',BOSb:'#BD3039',DETb:'#FA4616',STL:'#C41E3A',LAD:'#2A7BD0',LAA:'#BA0021',SEA:'#0C8C8C',PITb:'#D9A01F',WSHb:'#AB0003',CLEb:'#E31937',ARI:'#A71930',OAK:'#0F9D58'
+};
+const TEAMN = {CHI:'Bulls',LAL:'Lakers',BOS:'Celtics',GSW:'Warriors',SAS:'Spurs',HOU:'Rockets',OKC:'Thunder/Sonics',PHX:'Suns',MIL:'Bucks',MIN:'Timberwolves',DAL:'Mavericks',CLE:'Cavaliers',PHI:'76ers',UTA:'Jazz',NYK:'Knicks',MIA:'Heat',DET:'Pistons',ATL:'Hawks',DEN:'Nuggets',LAC:'Clippers',POR:'Trail Blazers',BKN:'Nets',SAC:'Kings/Royals',ORL:'Magic',IND:'Pacers',TOR:'Raptors',MEM:'Grizzlies',NOP:'Pelicans',WAS:'Bullets/Wizards',
+ EDM:'Oilers',PIT:'Penguins',BOSh:'Bruins',DETh:'Red Wings',WSH:'Capitals',MTL:'Canadiens',NJD:'Devils',BUF:'Sabres',COL:'Avalanche',CHIh:'Blackhawks',NYI:'Islanders',TORh:'Maple Leafs',TBL:'Lightning',
+ NYY:'Yankees',SF:'Giants',ATLb:'Braves',BOSb:'Red Sox',DETb:'Tigers',STL:'Cardinals',LAD:'Dodgers',LAA:'Angels',SEA:'Mariners',PITb:'Pirates',WSHb:'Senators',CLEb:'Spiders/Naps',ARI:'D-backs',OAK:'Athletics'};
+const NBATEAM = "Michael Jordan=CHI|LeBron James=CLE|Kareem Abdul-Jabbar=LAL|Magic Johnson=LAL|Larry Bird=BOS|Bill Russell=BOS|Wilt Chamberlain=PHI|Kobe Bryant=LAL|Tim Duncan=SAS|Shaquille O'Neal=LAL|Hakeem Olajuwon=HOU|Stephen Curry=GSW|Kevin Durant=OKC|Nikola Jokic=DEN|Giannis Antetokounmpo=MIL|Kevin Garnett=MIN|Dirk Nowitzki=DAL|Oscar Robertson=SAC|Jerry West=LAL|Julius Erving=PHI|Moses Malone=PHI|Karl Malone=UTA|Charles Barkley=PHX|Allen Iverson=PHI|Dwyane Wade=MIA|Kawhi Leonard=SAS|Shai Gilgeous-Alexander=OKC|Luka Doncic=DAL|Chris Paul=LAC|David Robinson=SAS|Isiah Thomas=DET|Dominique Wilkins=ATL|Kevin McHale=BOS|Alex English=DEN|Adrian Dantley=UTA|Bernard King=NYK|James Worthy=LAL|Robert Parish=BOS|Sidney Moncrief=MIL|John Stockton=UTA|Patrick Ewing=NYK|Scottie Pippen=CHI|Gary Payton=OKC|Clyde Drexler=POR|Reggie Miller=IND|Dennis Rodman=DET|Alonzo Mourning=MIA|Penny Hardaway=ORL|Grant Hill=DET|Steve Nash=PHX|Tracy McGrady=ORL|Paul Pierce=BOS|Jason Kidd=BKN|Vince Carter=TOR|Dwight Howard=ORL|Ray Allen=MIL|James Harden=HOU|Russell Westbrook=OKC|Anthony Davis=NOP|Paul George=IND|Damian Lillard=POR|Kyrie Irving=CLE|Klay Thompson=GSW|Joel Embiid=PHI|Jayson Tatum=BOS|Anthony Edwards=MIN|Victor Wembanyama=SAS|Jimmy Butler=MIA|Devin Booker=PHX|Donovan Mitchell=CLE|Jalen Brunson=NYK|Tony Parker=SAS|Bob Cousy=BOS|George Gervin=SAS|Manu Ginobili=SAS|Sam Jones=BOS|Hal Greer=PHI|Elgin Baylor=LAL|John Havlicek=BOS|Rick Barry=GSW|Carmelo Anthony=DEN|Bob Pettit=ATL|Elvin Hayes=WAS|Pau Gasol=MEM|Chris Webber=SAC|Blake Griffin=LAC|Chris Bosh=TOR|Rasheed Wallace=DET|George Mikan=LAL|Dikembe Mutombo=DEN";
+const NHLTEAM = "Wayne Gretzky=EDM|Mario Lemieux=PIT|Bobby Orr=BOSh|Gordie Howe=DETh|Sidney Crosby=PIT|Alex Ovechkin=WSH|Connor McDavid=EDM|Mark Messier=EDM|Jaromir Jagr=PIT|Patrick Roy=MTL|Martin Brodeur=NJD|Dominik Hasek=BUF|Maurice Richard=MTL|Jean Beliveau=MTL|Steve Yzerman=DETh|Nicklas Lidstrom=DETh|Ray Bourque=BOSh|Joe Sakic=COL|Bobby Hull=CHIh|Mike Bossy=NYI|Nathan MacKinnon=COL|Auston Matthews=TORh|Nikita Kucherov=TBL|Paul Coffey=EDM|Denis Potvin=NYI|Guy Lafleur=MTL";
+const MLBTEAM = "Babe Ruth=NYY|Willie Mays=SF|Hank Aaron=ATLb|Ted Williams=BOSb|Barry Bonds=SF|Ty Cobb=DETb|Lou Gehrig=NYY|Mickey Mantle=NYY|Stan Musial=STL|Shohei Ohtani=LAD|Mike Trout=LAA|Derek Jeter=NYY|Ken Griffey Jr.=SEA|Albert Pujols=STL|Jackie Robinson=LAD|Roberto Clemente=PITb|Walter Johnson=WSHb|Cy Young=CLEb|Sandy Koufax=LAD|Pedro Martinez=BOSb|Randy Johnson=ARI|Greg Maddux=ATLb|Mariano Rivera=NYY|Clayton Kershaw=LAD|Aaron Judge=NYY|Rickey Henderson=OAK";
+const ACC_NBA = "Michael Jordan:r6,f6,m5,d1,a14,h|LeBron James:r4,f4,m4,a22|Kareem Abdul-Jabbar:r6,f2,m6,a19,h|Magic Johnson:r5,f3,m3,a12,h|Larry Bird:r3,f2,m3,a12,h|Bill Russell:r11,m5,a12,h|Wilt Chamberlain:r2,f1,m4,a13,h|Kobe Bryant:r5,f2,m1,a18,h|Tim Duncan:r5,f3,m2,a15,h|Shaquille O'Neal:r4,f3,m1,a15,h|Hakeem Olajuwon:r2,f2,m1,d2,a12,h|Stephen Curry:r4,f1,m2,a12|Kevin Durant:r2,f2,m1,a16|Nikola Jokic:r1,f1,m3,a8|Giannis Antetokounmpo:r1,f1,m2,d1,a10|Kevin Garnett:r1,m1,d1,a15,h|Dirk Nowitzki:r1,f1,m1,a14,h|Oscar Robertson:r1,m1,a12,h|Jerry West:r1,f1,a14,h|Julius Erving:r1,m1,a11,h|Moses Malone:r1,f1,m3,a12,h|Karl Malone:m2,a14,h|Charles Barkley:m1,a11,h|Allen Iverson:m1,a11,h|Dwyane Wade:r3,f1,a13,h|Kawhi Leonard:r2,f2,d2,a6|Shai Gilgeous-Alexander:r1,f1,m2,a4|Luka Doncic:a7|Chris Paul:a12|David Robinson:r2,m1,d1,a10,h|Isiah Thomas:r2,f1,a12,h|Dominique Wilkins:a9,h|Kevin McHale:r3,a7,h|Alex English:a8,h|Adrian Dantley:a6,h|Bernard King:a4,h|James Worthy:r3,f1,a7,h|Robert Parish:r4,a9,h|Sidney Moncrief:d2,a5,h|John Stockton:a10,h|Patrick Ewing:a11,h|Scottie Pippen:r6,a7,h|Gary Payton:r1,d1,a9,h|Clyde Drexler:r1,a10,h|Reggie Miller:a5,h|Dennis Rodman:r5,d2,a2,h|Alonzo Mourning:r1,d2,a7,h|Penny Hardaway:a4|Grant Hill:a7,h|Steve Nash:m2,a8,h|Tracy McGrady:a7,h|Paul Pierce:r1,f1,a10,h|Jason Kidd:r1,a10,h|Vince Carter:a8,h|Dwight Howard:r1,d3,a8,h|Ray Allen:r2,a10,h|James Harden:m1,a11|Russell Westbrook:m1,a9|Anthony Davis:r1,a10|Paul George:a9|Damian Lillard:a9|Kyrie Irving:r1,a9|Klay Thompson:r4,a5|Joel Embiid:m1,a7|Jayson Tatum:r1,a6|Anthony Edwards:a4|Victor Wembanyama:d1,a2|Jimmy Butler:a6|Devin Booker:a5|Donovan Mitchell:a7|Jalen Brunson:r1,f1,a3|Tony Parker:r4,f1,a6,h|Bob Cousy:r6,m1,a13,h|George Gervin:a9,h|Manu Ginobili:r4,a2,h|Sam Jones:r10,a5,h|Hal Greer:r1,a10,h|Elgin Baylor:a11,h|John Havlicek:r8,f1,a13,h|Rick Barry:r1,f1,a8,h|Carmelo Anthony:a10,h|Bob Pettit:r1,m2,a11,h|Elvin Hayes:r1,a12,h|Pau Gasol:r2,a6,h|Chris Webber:a5,h|Blake Griffin:a6|Chris Bosh:r2,a11,h|Rasheed Wallace:r1,a4|George Mikan:r5,a4,h|Dikembe Mutombo:d4,a8,h";
+const ACC_NHL = "Wayne Gretzky:c4,H9,R10,S2,h|Mario Lemieux:c2,H3,R6,S2,h|Bobby Orr:c2,H3,N8,R2,S2,h|Gordie Howe:c4,H6,R6,h|Sidney Crosby:c3,H2,R2,S2|Alex Ovechkin:c1,H3,R1,S1|Connor McDavid:H3,R6,S1|Mark Messier:c6,H2,S1,h|Jaromir Jagr:c2,H1,R5,h|Patrick Roy:c4,V3,S3,h|Martin Brodeur:c3,V4,h|Dominik Hasek:c2,H2,V6,h|Maurice Richard:c8,H1,h|Jean Beliveau:c10,H2,R1,S1,h|Steve Yzerman:c3,S1,h|Nicklas Lidstrom:c4,N7,S1,h|Ray Bourque:c1,N5,h|Joe Sakic:c2,H1,S1,h|Bobby Hull:c1,H2,R3,h|Mike Bossy:c4,S1,h|Nathan MacKinnon:c1,H1|Auston Matthews:H1|Nikita Kucherov:c2,H2,R3|Paul Coffey:c4,N3,h|Denis Potvin:c4,N3,h|Guy Lafleur:c5,H2,R3,S1,h";
+const ACC_MLB = "Babe Ruth:w7,M1,a2,h|Willie Mays:w1,M2,a24,h|Hank Aaron:w1,M1,a25,h|Ted Williams:M2,a19,h|Barry Bonds:M7,a14|Ty Cobb:M1,h|Lou Gehrig:w6,M2,a7,h|Mickey Mantle:w7,M3,a20,h|Stan Musial:w3,M3,a24,h|Shohei Ohtani:w2,M4,a6|Mike Trout:M3,a12|Derek Jeter:w5,a14,h|Ken Griffey Jr.:M1,a13,h|Albert Pujols:w2,M3,a11|Jackie Robinson:w1,M1,a6,h|Roberto Clemente:w2,M1,a15,h|Walter Johnson:w1,M2,h|Cy Young:w1,h|Sandy Koufax:w4,M1,Y3,a7,h|Pedro Martinez:w1,Y3,a8,h|Randy Johnson:w1,Y5,a10,h|Greg Maddux:w1,Y4,a8,h|Mariano Rivera:w5,a13,h|Clayton Kershaw:w3,M1,Y3,a11|Aaron Judge:M3,a8|Rickey Henderson:w2,M1,a10,h";
+
+const ACC_LABEL = {
+  nba:{r:['Champion','Champ'],f:['Finals MVP','FMVP'],m:['MVP','MVP'],d:['DPOY','DPOY'],a:['All-Star','All-Star']},
+  nhl:{c:['Stanley Cup','Cup'],H:['Hart','Hart'],R:['Art Ross','Art Ross'],S:['Conn Smythe','Smythe'],N:['Norris','Norris'],V:['Vezina','Vezina']},
+  mlb:{w:['World Series','WS'],M:['MVP','MVP'],Y:['Cy Young','Cy Young'],a:['All-Star','All-Star']}
+};
+const ACC = {};
+[['nba',ACC_NBA],['nhl',ACC_NHL],['mlb',ACC_MLB]].forEach(([lg, str]) => str.split('|').forEach(row => {
+  const i = row.indexOf(':'); const name = row.slice(0, i); const o = {lg, hof:false, v:{}};
+  row.slice(i + 1).split(',').forEach(t => { if (t === 'h') o.hof = true; else o.v[t[0]] = +t.slice(1); });
+  ACC[name] = o;
+}));
+const accOf = name => ACC[name] || null;
+function accChips(name, max) {
+  const a = accOf(name); if (!a) return '';
+  const L = ACC_LABEL[a.lg]; const out = [];
+  for (const k in L) if (a.v[k]) out.push(`<span class="acc">${a.v[k] > 1 ? a.v[k] + '&times; ' : ''}${L[k][1]}</span>`);
+  const top = out.slice(0, max || 99);
+  if (a.hof) top.push('<span class="acc hof">Hall of Fame</span>');
+  return top.join('');
+}
+function accLine(name) {
+  const a = accOf(name); if (!a) return '';
+  const L = ACC_LABEL[a.lg]; const out = [];
+  for (const k in L) if (a.v[k]) out.push(`${a.v[k] > 1 ? a.v[k] + '&times; ' : ''}${L[k][1]}`);
+  if (a.hof) out.push('HOF');
+  return out.join(' &middot; ');
+}
+function taleOfTape(A, B) {
+  const a = accOf(A.name), b = accOf(B.name);
+  if (!a || !b) return '';
+  if (a.lg !== b.lg) {
+    const col = (x, nm) => { const L = ACC_LABEL[x.lg]; const rows = Object.keys(L).filter(k => x.v[k]).map(k => `<div class="mx-row"><b>${x.v[k]}</b>${L[k][0]}</div>`); if (x.hof) rows.push('<div class="mx-row"><b>&#10003;</b>Hall of Fame</div>'); return `<div class="mx-col"><div class="mx-h">${esc(nm)} <span>${(window.LGNAME||{})[x.lg] || x.lg.toUpperCase()}</span></div>${rows.join('') || '<div class="mx-row">No major awards</div>'}</div>`; };
+    return `<div class="tape"><div class="tt-head">Tale of the tape</div><div class="mx">${col(a, A.name)}${col(b, B.name)}</div><div class="tt-foot">Different leagues, so each player's own awards. Through the 2026 season</div></div>`;
+  }
+  const L = ACC_LABEL[a.lg];
+  const rows = Object.keys(L).filter(k => a.v[k] || b.v[k]).map(k => {
+    const x = a.v[k] || 0, y = b.v[k] || 0;
+    return `<div class="tt-row"><span class="${x > y ? 'lead' : ''}">${x}</span><em>${L[k][0]}</em><span class="${y > x ? 'lead' : ''}">${y}</span></div>`;
+  });
+  if (a.hof || b.hof) rows.push(`<div class="tt-row"><span class="${a.hof && !b.hof ? 'lead' : ''}">${a.hof ? 'Yes' : 'No'}</span><em>Hall of Fame</em><span class="${b.hof && !a.hof ? 'lead' : ''}">${b.hof ? 'Yes' : 'No'}</span></div>`);
+  if (!rows.length) return '';
+  return `<div class="tape"><div class="tt-head">Tale of the tape</div>${rows.join('')}<div class="tt-foot">Through the 2026 season</div></div>`;
+}
+
+const TEAMOF = {};
+[NBATEAM, NHLTEAM, MLBTEAM].forEach(s => s.split('|').forEach(p => { const [n, t] = p.split('='); TEAMOF[n] = t; }));
+const keys = s => s.split('|').map(p => p.split('=')[0]).join('|');
+
+const CATS = [
+ {id:'athletes',name:'Athletes',c:'#e5484d',blurb:'NBA, NHL, MLB, eras, positions',subs:[
+  {id:'nba',name:'NBA',g:'All-time',items:"Michael Jordan|LeBron James|Kareem Abdul-Jabbar|Magic Johnson|Larry Bird|Bill Russell|Wilt Chamberlain|Kobe Bryant|Tim Duncan|Shaquille O'Neal|Hakeem Olajuwon|Stephen Curry|Kevin Durant|Nikola Jokic|Giannis Antetokounmpo|Kevin Garnett|Dirk Nowitzki|Oscar Robertson|Jerry West|Julius Erving|Moses Malone|Karl Malone|Charles Barkley|Allen Iverson|Dwyane Wade|Kawhi Leonard|Shai Gilgeous-Alexander|Luka Doncic|Chris Paul|David Robinson"},
+  {id:'nhl',name:'NHL',g:'All-time',items:keys(NHLTEAM)},
+  {id:'mlb',name:'MLB',g:'All-time',items:keys(MLBTEAM)},
+  {id:'nba-80s',name:'80s',g:'NBA by decade',label:'NBA 80s',items:"Magic Johnson|Larry Bird|Kareem Abdul-Jabbar|Julius Erving|Moses Malone|Isiah Thomas|Dominique Wilkins|Kevin McHale|Michael Jordan|Alex English|Adrian Dantley|Bernard King|James Worthy|Robert Parish|Charles Barkley|Sidney Moncrief"},
+  {id:'nba-90s',name:'90s',g:'NBA by decade',label:'NBA 90s',items:"Michael Jordan|Hakeem Olajuwon|David Robinson|Karl Malone|John Stockton|Charles Barkley|Patrick Ewing|Scottie Pippen|Shaquille O'Neal|Gary Payton|Clyde Drexler|Reggie Miller|Dennis Rodman|Alonzo Mourning|Penny Hardaway|Grant Hill"},
+  {id:'nba-00s',name:'2000s',g:'NBA by decade',label:'NBA 2000s',items:"Shaquille O'Neal|Tim Duncan|Kobe Bryant|Kevin Garnett|Dirk Nowitzki|Allen Iverson|Steve Nash|Tracy McGrady|Dwyane Wade|LeBron James|Paul Pierce|Jason Kidd|Vince Carter|Chris Paul|Dwight Howard|Ray Allen"},
+  {id:'nba-10s',name:'2010s',g:'NBA by decade',label:'NBA 2010s',items:"LeBron James|Stephen Curry|Kevin Durant|Kawhi Leonard|James Harden|Russell Westbrook|Chris Paul|Dwyane Wade|Giannis Antetokounmpo|Anthony Davis|Dirk Nowitzki|Paul George|Damian Lillard|Kyrie Irving|Klay Thompson|Dwight Howard"},
+  {id:'nba-20s',name:'2020s',g:'NBA by decade',label:'NBA 2020s',items:"Nikola Jokic|Giannis Antetokounmpo|Shai Gilgeous-Alexander|Luka Doncic|Joel Embiid|Stephen Curry|LeBron James|Jayson Tatum|Kevin Durant|Anthony Edwards|Victor Wembanyama|Jimmy Butler|Devin Booker|Kawhi Leonard|Donovan Mitchell|Jalen Brunson"},
+  {id:'nba-pg',name:'PG',g:'NBA by position',label:'NBA point guards',items:"Magic Johnson|Stephen Curry|Oscar Robertson|Isiah Thomas|John Stockton|Chris Paul|Steve Nash|Jason Kidd|Gary Payton|Russell Westbrook|Allen Iverson|Damian Lillard|Kyrie Irving|Tony Parker|Shai Gilgeous-Alexander|Bob Cousy"},
+  {id:'nba-sg',name:'SG',g:'NBA by position',label:'NBA shooting guards',items:"Michael Jordan|Kobe Bryant|Jerry West|Dwyane Wade|James Harden|Clyde Drexler|George Gervin|Reggie Miller|Ray Allen|Tracy McGrady|Vince Carter|Manu Ginobili|Klay Thompson|Sam Jones|Hal Greer|Devin Booker|Anthony Edwards"},
+  {id:'nba-sf',name:'SF',g:'NBA by position',label:'NBA small forwards',items:"LeBron James|Larry Bird|Kevin Durant|Julius Erving|Kawhi Leonard|Scottie Pippen|Elgin Baylor|John Havlicek|Rick Barry|Dominique Wilkins|Paul Pierce|Carmelo Anthony|Jayson Tatum|James Worthy|Grant Hill|Jimmy Butler"},
+  {id:'nba-pf',name:'PF',g:'NBA by position',label:'NBA power forwards',items:"Tim Duncan|Kevin Garnett|Dirk Nowitzki|Karl Malone|Charles Barkley|Giannis Antetokounmpo|Kevin McHale|Bob Pettit|Elvin Hayes|Pau Gasol|Chris Webber|Dennis Rodman|Anthony Davis|Blake Griffin|Chris Bosh|Rasheed Wallace"},
+  {id:'nba-c',name:'C',g:'NBA by position',label:'NBA centers',items:"Kareem Abdul-Jabbar|Bill Russell|Wilt Chamberlain|Shaquille O'Neal|Hakeem Olajuwon|Nikola Jokic|Moses Malone|David Robinson|Patrick Ewing|Joel Embiid|George Mikan|Dwight Howard|Victor Wembanyama|Robert Parish|Alonzo Mourning|Dikembe Mutombo"}
+ ]},
+ {id:'music',name:'Musicians',c:'#8b6dff',blurb:'Rap, country, R&B, pop, rock',subs:[
+  {id:'rap',name:'Rap',c:'#d4a017',items:"Tupac|The Notorious B.I.G.|Jay-Z|Nas|Eminem|Kendrick Lamar|Drake|Kanye West|Lil Wayne|J. Cole|Snoop Dogg|Dr. Dre|OutKast|Ice Cube|50 Cent|Travis Scott|Future|Nicki Minaj|Lauryn Hill|Missy Elliott|Rakim|Wu-Tang Clan|A Tribe Called Quest|Run-DMC|Lil Baby|Tyler, the Creator|Mac Miller|DMX"},
+  {id:'country',name:'Country',c:'#b5651d',items:"Johnny Cash|Dolly Parton|Willie Nelson|George Strait|Garth Brooks|Merle Haggard|Hank Williams|Patsy Cline|Loretta Lynn|Reba McEntire|Shania Twain|Alan Jackson|Kenny Rogers|Waylon Jennings|Tim McGraw|Kenny Chesney|Carrie Underwood|Luke Combs|Morgan Wallen|Chris Stapleton|Zach Bryan|Keith Urban|Brad Paisley|Toby Keith"},
+  {id:'rnb',name:'R&B',c:'#c2185b',items:"Marvin Gaye|Stevie Wonder|Aretha Franklin|Whitney Houston|Beyonce|Usher|The Weeknd|Frank Ocean|SZA|Alicia Keys|Mary J. Blige|Prince|Luther Vandross|Al Green|Sam Cooke|Ray Charles|Otis Redding|Janet Jackson|Brandy|Aaliyah|D'Angelo|Daniel Caesar|Brent Faiyaz|Erykah Badu|Boyz II Men|TLC"},
+  {id:'pop',name:'Pop',c:'#e056b5',items:"Michael Jackson|Madonna|Taylor Swift|Rihanna|Lady Gaga|Britney Spears|Justin Bieber|Ariana Grande|Elton John|Mariah Carey|Bruno Mars|Katy Perry|Adele|Ed Sheeran|Billie Eilish|Dua Lipa|Harry Styles|Justin Timberlake|ABBA|Olivia Rodrigo|Sabrina Carpenter|Shawn Mendes|Celine Dion|George Michael|Bee Gees"},
+  {id:'rock',name:'Rock',c:'#7a7a8c',items:"The Beatles|Led Zeppelin|The Rolling Stones|Queen|Pink Floyd|Nirvana|Jimi Hendrix|AC/DC|The Who|Guns N' Roses|Metallica|Elvis Presley|U2|Red Hot Chili Peppers|Foo Fighters|Bruce Springsteen|David Bowie|Fleetwood Mac|The Doors|Eagles|Aerosmith|Black Sabbath|Radiohead|Linkin Park|Oasis|Bon Jovi"}
+ ]},
+ {id:'albums',name:'Albums and songs',c:'#d4a017',blurb:'Rap albums, all-time albums, songs',subs:[
+  {id:'rap-albums',name:'Rap albums',c:'#d4a017',items:"Illmatic|The Chronic|Ready to Die|To Pimp a Butterfly|good kid, m.A.A.d city|My Beautiful Dark Twisted Fantasy|The Marshall Mathers LP|Reasonable Doubt|The Blueprint|Enter the Wu-Tang (36 Chambers)|The Miseducation of Lauryn Hill|Aquemini|Get Rich or Die Tryin'|Tha Carter III|The College Dropout|Graduation|All Eyez on Me|The Low End Theory|Take Care|2014 Forest Hills Drive|Astroworld|Madvillainy|Stankonia|DAMN."},
+  {id:'albums-all',name:'Albums',c:'#4a90d9',items:"Thriller|Abbey Road|Rumours|Back in Black|The Dark Side of the Moon|Nevermind|Purple Rain|Lemonade|21|1989|Songs in the Key of Life|What's Going On|Led Zeppelin IV|Pet Sounds|Appetite for Destruction|Blonde|Channel Orange|After Hours|Born to Run|Hotel California|OK Computer|Kind of Blue|Sgt. Pepper's Lonely Hearts Club Band|Bad"},
+  {id:'songs',name:'Songs',c:'#e5484d',items:"Bohemian Rhapsody|Billie Jean|Smells Like Teen Spirit|Hotel California|Stairway to Heaven|Lose Yourself|Juicy|Hey Jude|Like a Rolling Stone|Imagine|Purple Rain|Sweet Child O' Mine|I Will Always Love You|Respect|Crazy in Love|Umbrella|Blinding Lights|Mr. Brightside|In Da Club|Hotline Bling|Alright|Hypnotize|Nuthin' but a 'G' Thang|Sicko Mode"}
+ ]},
+ {id:'movies',name:'Movies',c:'#2a7bd0',blurb:'Action, comedy, drama, horror, animated',subs:[
+  {id:'m-action',name:'Action',c:'#e0552d',items:"The Dark Knight|Mad Max: Fury Road|Die Hard|Terminator 2|The Matrix|Gladiator|John Wick|Top Gun: Maverick|Mission: Impossible - Fallout|Inception|Avengers: Endgame|Raiders of the Lost Ark|Aliens|Heat|Kill Bill: Vol. 1|The Bourne Ultimatum|Speed|Lethal Weapon|Casino Royale|Black Panther|Logan|Predator|Point Break|Face/Off"},
+  {id:'m-comedy',name:'Comedy',c:'#e5b021',items:"Superbad|Step Brothers|Anchorman|The Hangover|Dumb and Dumber|Groundhog Day|Ferris Bueller's Day Off|Airplane!|Monty Python and the Holy Grail|Borat|Bridesmaids|Mean Girls|Napoleon Dynamite|Talladega Nights|Happy Gilmore|Billy Madison|21 Jump Street|Wedding Crashers|The Big Lebowski|Friday|Coming to America|Tropic Thunder|Old School|Zoolander"},
+  {id:'m-drama',name:'Drama',c:'#5b6fd6',items:"The Godfather|The Shawshank Redemption|The Godfather Part II|Pulp Fiction|Goodfellas|Forrest Gump|Fight Club|Schindler's List|The Departed|Good Will Hunting|Whiplash|There Will Be Blood|Taxi Driver|12 Angry Men|Scarface|Casino|Titanic|The Social Network|Oppenheimer|Parasite|Moonlight|Saving Private Ryan|A Beautiful Mind|The Wolf of Wall Street|Catch Me If You Can"},
+  {id:'m-horror',name:'Horror',c:'#9b1c1c',items:"The Shining|Get Out|The Exorcist|Halloween|Psycho|Alien|A Nightmare on Elm Street|Scream|Hereditary|The Conjuring|It|The Texas Chain Saw Massacre|Jaws|The Silence of the Lambs|Saw|Us|The Thing|Rosemary's Baby|Paranormal Activity|Sinners"},
+  {id:'m-animated',name:'Animated',c:'#21b6a8',items:"Toy Story|The Lion King|Spirited Away|Shrek|Up|Finding Nemo|WALL-E|Spider-Man: Into the Spider-Verse|Inside Out|Coco|The Incredibles|Ratatouille|Monsters, Inc.|Aladdin|Beauty and the Beast|Zootopia|Frozen|How to Train Your Dragon|Kung Fu Panda|Toy Story 3|Spider-Man: Across the Spider-Verse|My Neighbor Totoro|The Iron Giant|Despicable Me"}
+ ]},
+ {id:'shows',name:'Shows',c:'#21b6a8',blurb:'Drama, comedy, animated',subs:[
+  {id:'s-drama',name:'Drama',c:'#5b6fd6',items:"Breaking Bad|The Sopranos|The Wire|Game of Thrones|Mad Men|Better Call Saul|Succession|The Last of Us|Stranger Things|Ozark|Peaky Blinders|True Detective|Prison Break|Lost|The Walking Dead|Narcos|Dexter|House of Cards|Yellowstone|Euphoria|The Bear|Severance|Boardwalk Empire|Friday Night Lights"},
+  {id:'s-comedy',name:'Comedy',c:'#e5b021',items:"The Office|Seinfeld|Friends|Parks and Recreation|Curb Your Enthusiasm|It's Always Sunny in Philadelphia|Arrested Development|Brooklyn Nine-Nine|Schitt's Creek|How I Met Your Mother|The Fresh Prince of Bel-Air|Modern Family|Community|30 Rock|Ted Lasso|Atlanta|Entourage|Silicon Valley|New Girl|Veep|Abbott Elementary|Superstore|Malcolm in the Middle|Everybody Loves Raymond"},
+  {id:'s-animated',name:'Animated',c:'#21b6a8',items:"The Simpsons|Family Guy|South Park|Avatar: The Last Airbender|Rick and Morty|SpongeBob SquarePants|BoJack Horseman|Futurama|King of the Hill|Bob's Burgers|Arcane|Adventure Time|The Boondocks|Batman: The Animated Series|Archer|Gravity Falls|Invincible|Dragon Ball Z|Naruto|Attack on Titan"}
+ ]},
+ {id:'food',name:'Food',c:'#f08a24',blurb:'Fast food, pizza, snacks, cuisines',subs:[
+  {id:'fastfood',name:'Fast food',c:'#e5484d',items:"McDonald's|Wendy's|Burger King|Chick-fil-A|Popeyes|KFC|Taco Bell|Chipotle|Five Guys|In-N-Out|Shake Shack|A&W|Harvey's|Tim Hortons|Subway|Mary Brown's|Domino's|Pizza Pizza|Dairy Queen|Raising Cane's|Wingstop|Panda Express|Jollibee|Osmow's"},
+  {id:'pizza',name:'Pizza',c:'#f08a24',items:"Pepperoni|Margherita|Hawaiian|Meat lover's|BBQ chicken|Supreme|Buffalo chicken|Veggie|Four cheese|Detroit-style|New York slice|Chicago deep dish|Neapolitan|Sicilian|Grandma pie|White pizza"},
+  {id:'snacks',name:'Snacks',c:'#d4a017',items:"Doritos Cool Ranch|Doritos Nacho Cheese|Lay's Classic|Ruffles All Dressed|Cheetos|Pringles|Takis|Kit Kat|Reese's|Oreo|Skittles|Sour Patch Kids|Twix|Snickers|M&M's|Goldfish|Cheez-It|Kinder Bueno|Coffee Crisp|Smarties|Ketchup chips|Hickory Sticks|Fuzzy Peaches|Swedish Berries"},
+  {id:'cuisines',name:'Cuisines',c:'#3ea55b',items:"Italian|Japanese|Mexican|Chinese|Indian|Thai|Korean|Vietnamese|Greek|Lebanese|French|Spanish|Jamaican|American BBQ|Ethiopian|Turkish|Filipino|Brazilian|Peruvian|Portuguese"}
+ ]},
+ {id:'games-cat',name:'Games',c:'#3ea55b',blurb:'The greatest video games ever',subs:[
+  {id:'games',name:'Video games',c:'#3ea55b',items:"The Legend of Zelda: Breath of the Wild|Super Mario 64|Minecraft|Grand Theft Auto V|Red Dead Redemption 2|The Last of Us|The Witcher 3|Elden Ring|Skyrim|Fortnite|Call of Duty 4: Modern Warfare|Halo 3|God of War (2018)|Super Smash Bros. Melee|Pokemon Red and Blue|Tetris|Portal 2|Mass Effect 2|NBA 2K11|Rocket League|Grand Theft Auto: San Andreas|Mario Kart 8|Ocarina of Time|Wii Sports"}
+ ]},
+ {id:'brands-cat',name:'Brands and cars',c:'#c0c0cc',blurb:'Sneakers, clothing brands, cars',subs:[
+  {id:'sneakers',name:'Sneakers',c:'#e5484d',items:"Air Jordan 1|Air Jordan 11|Air Jordan 4|Air Jordan 3|Air Force 1|Nike Dunk Low|Air Max 90|Air Max 1|Adidas Samba|Adidas Superstar|Yeezy Boost 350|Converse Chuck Taylor|Vans Old Skool|New Balance 550|New Balance 990|Nike Kobe 6|Air Jordan 6|Asics Gel-Kayano 14|Adidas Stan Smith|Air Max 95"},
+  {id:'brands',name:'Clothing brands',c:'#8b6dff',items:"Nike|Adidas|Supreme|Ralph Lauren|Lululemon|Fear of God|Stussy|Carhartt|The North Face|Canada Goose|Arc'teryx|Champion|Gucci|Louis Vuitton|Off-White|Palace|Aritzia|Zara|Uniqlo|Kith"},
+  {id:'cars',name:'Car brands',c:'#c0c0cc',items:"Ferrari|Lamborghini|Porsche|Mercedes-Benz|BMW|Audi|Rolls-Royce|Bentley|Aston Martin|McLaren|Bugatti|Tesla|Toyota|Honda|Ford|Chevrolet|Dodge|Jeep|Lexus|Range Rover|Nissan|Subaru"}
+ ]}
+];
+
+const FACEOFFS = [
+ ['nba','Michael Jordan','LeBron James'],['rap','Kendrick Lamar','Drake'],['nhl','Wayne Gretzky','Mario Lemieux'],
+ ['rap','Tupac','The Notorious B.I.G.'],['s-drama','Breaking Bad','The Sopranos'],['fastfood',"McDonald's","Wendy's"],
+ ['nba','Kobe Bryant','Tim Duncan'],['nhl','Sidney Crosby','Alex Ovechkin'],['rap','Jay-Z','Nas'],
+ ['m-drama','The Godfather','The Shawshank Redemption'],['s-comedy','The Office','Seinfeld'],['nba-20s','Nikola Jokic','Shai Gilgeous-Alexander'],
+ ['sneakers','Air Jordan 1','Air Force 1'],['cars','Ferrari','Lamborghini'],['games','Minecraft','Fortnite'],
+ ['rock','The Beatles','The Rolling Stones'],['snacks','Kit Kat','Coffee Crisp'],['mlb','Babe Ruth','Shohei Ohtani']
+];
+
+
+// ---------- v3 data additions ----------
+TEAMC.TORb = '#2a6fc9'; TEAMN.TORb = 'Blue Jays';
+const ACC_NHL2 = "Terry Sawchuk:c4,V4,h|Doug Harvey:c6,N7,h|Jacques Plante:c6,H1,V7,h|Stan Mikita:c1,H2,R4,h|Glenn Hall:c1,V3,S1,h|Howie Morenz:c3,H3,R2,h|Eddie Shore:c2,H4,h|Ted Lindsay:c4,R1,h|Frank Mahovlich:c6,h|Red Kelly:c8,N1,h|Henri Richard:c11,h|Milt Schmidt:c2,H1,R1,h|Bryan Trottier:c6,H1,R1,S1,h|Phil Esposito:c2,H2,R5,h|Marcel Dionne:R1,h|Ken Dryden:c6,V5,S1,h|Larry Robinson:c6,N2,S1,h|Jari Kurri:c5,h|Peter Stastny:h|Grant Fuhr:c5,V1,h|Eric Lindros:H1,h|Teemu Selanne:c1,h|Peter Forsberg:c2,H1,R1,h|Brett Hull:c2,H1,h|Chris Pronger:c1,H1,N1,h|Pavel Bure:h|Joe Thornton:H1,R1,h|Leon Draisaitl:H1,R1|Patrick Kane:c3,H1,R1,S1|Erik Karlsson:N3|Cale Makar:c1,N2,S1|Victor Hedman:c2,N1,S1|Carey Price:H1,V1|Andrei Vasilevskiy:c2,V2,S1|Connor Hellebuyck:H1,V3|Steven Stamkos:c2|Evgeni Malkin:c3,H1,R2,S1|Chris Chelios:c3,N3,h|Scott Niedermayer:c4,N1,S1,h|Brian Leetch:c1,N2,S1,h|Al MacInnis:c1,N1,S1,h|Luc Robitaille:c1,h|Henrik Lundqvist:V1,h|Ed Belfour:c1,V2,h|Marc-Andre Fleury:c3,V1|Bernie Parent:c2,V2,S2,h|Tony Esposito:V3,h";
+const ACC_MLB2 = "Honus Wagner:w1,h|Joe DiMaggio:w9,M3,a13,h|Rogers Hornsby:w1,M2,h|Jimmie Foxx:w2,M3,a9,h|Christy Mathewson:w1,h|Satchel Paige:w1,a2,h|Lefty Grove:w2,M1,a6,h|Mel Ott:w1,a12,h|Bob Gibson:w2,M1,Y2,a9,h|Frank Robinson:w2,M2,a14,h|Johnny Bench:w2,M2,a14,h|Mike Schmidt:w1,M3,a12,h|Nolan Ryan:w1,a8,h|Tom Seaver:w1,Y3,a12,h|Reggie Jackson:w5,M1,a14,h|George Brett:w1,M1,a13,h|Cal Ripken Jr.:w1,M2,a19,h|Tony Gwynn:a15,h|Ichiro Suzuki:M1,a10,h|Alex Rodriguez:w1,M3,a14|Miguel Cabrera:w1,M2,a12|David Ortiz:w3,a10,h|Justin Verlander:w2,M1,Y3,a10|Roger Clemens:w2,M1,Y7,a11|Joe Morgan:w2,M2,a10,h|Ozzie Smith:w1,a15,h|Freddie Freeman:w3,M1,a10|Chipper Jones:w1,M1,a8,h|Yogi Berra:w10,M3,a18,h|Ivan Rodriguez:w1,M1,a14,h|Mike Piazza:a12,h|Roy Campanella:w1,M3,a8,h|Carlton Fisk:a11,h|Gary Carter:w1,a11,h|Buster Posey:w3,M1,a7|Josh Gibson:h|Yadier Molina:w2,a10|Edgar Martinez:a7,h|Joe Mauer:M1,a6,h|Mickey Cochrane:w3,M2,h|Jorge Posada:w5,a5";
+[['nhl',ACC_NHL2],['mlb',ACC_MLB2]].forEach(([lg, str]) => str.split('|').forEach(row => {
+  const i = row.indexOf(':'); const name = row.slice(0, i); const o = {lg, hof:false, v:{}};
+  row.slice(i + 1).split(',').forEach(t => { if (t === 'h') o.hof = true; else o.v[t[0]] = +t.slice(1); });
+  ACC[name] = o;
+}));
+
+const athletes = CATS.find(c => c.id === 'athletes');
+athletes.blurb = 'NBA, NHL, MLB by era and position';
+athletes.subs.push(
+ {id:'nhl-early',name:'Pre-1967',g:'NHL by era',label:'NHL pre-1967',c:'#2e5baa',items:"Gordie Howe|Maurice Richard|Jean Beliveau|Bobby Hull|Terry Sawchuk|Doug Harvey|Jacques Plante|Stan Mikita|Glenn Hall|Howie Morenz|Eddie Shore|Ted Lindsay|Frank Mahovlich|Red Kelly|Henri Richard|Milt Schmidt"},
+ {id:'nhl-7080',name:'70s-80s',g:'NHL by era',label:'NHL 70s-80s',c:'#2e5baa',items:"Wayne Gretzky|Bobby Orr|Mario Lemieux|Mark Messier|Guy Lafleur|Mike Bossy|Denis Potvin|Paul Coffey|Bryan Trottier|Phil Esposito|Marcel Dionne|Ken Dryden|Larry Robinson|Jari Kurri|Peter Stastny|Grant Fuhr"},
+ {id:'nhl-9000',name:'90s-2000s',g:'NHL by era',label:'NHL 90s-2000s',c:'#2e5baa',items:"Steve Yzerman|Joe Sakic|Jaromir Jagr|Patrick Roy|Martin Brodeur|Dominik Hasek|Nicklas Lidstrom|Ray Bourque|Eric Lindros|Teemu Selanne|Peter Forsberg|Brett Hull|Chris Pronger|Mark Messier|Pavel Bure|Joe Thornton"},
+ {id:'nhl-now',name:'2010s-now',g:'NHL by era',label:'NHL 2010s-now',c:'#2e5baa',items:"Sidney Crosby|Alex Ovechkin|Connor McDavid|Nathan MacKinnon|Nikita Kucherov|Auston Matthews|Leon Draisaitl|Patrick Kane|Erik Karlsson|Cale Makar|Victor Hedman|Carey Price|Andrei Vasilevskiy|Connor Hellebuyck|Steven Stamkos|Evgeni Malkin"},
+ {id:'nhl-c',name:'C',g:'NHL by position',label:'NHL centers',c:'#2e5baa',items:"Wayne Gretzky|Mario Lemieux|Sidney Crosby|Connor McDavid|Mark Messier|Steve Yzerman|Joe Sakic|Jean Beliveau|Bryan Trottier|Phil Esposito|Nathan MacKinnon|Peter Forsberg|Stan Mikita|Evgeni Malkin|Leon Draisaitl|Marcel Dionne"},
+ {id:'nhl-w',name:'Wingers',g:'NHL by position',label:'NHL wingers',c:'#2e5baa',items:"Gordie Howe|Maurice Richard|Bobby Hull|Jaromir Jagr|Alex Ovechkin|Mike Bossy|Guy Lafleur|Brett Hull|Teemu Selanne|Jari Kurri|Nikita Kucherov|Patrick Kane|Pavel Bure|Frank Mahovlich|Ted Lindsay|Luc Robitaille"},
+ {id:'nhl-d',name:'D',g:'NHL by position',label:'NHL defensemen',c:'#2e5baa',items:"Bobby Orr|Nicklas Lidstrom|Ray Bourque|Doug Harvey|Paul Coffey|Denis Potvin|Larry Robinson|Chris Chelios|Eddie Shore|Scott Niedermayer|Chris Pronger|Brian Leetch|Al MacInnis|Erik Karlsson|Cale Makar|Victor Hedman"},
+ {id:'nhl-g',name:'G',g:'NHL by position',label:'NHL goalies',c:'#2e5baa',items:"Patrick Roy|Martin Brodeur|Dominik Hasek|Terry Sawchuk|Jacques Plante|Ken Dryden|Glenn Hall|Grant Fuhr|Carey Price|Henrik Lundqvist|Andrei Vasilevskiy|Connor Hellebuyck|Ed Belfour|Marc-Andre Fleury|Bernie Parent|Tony Esposito"},
+ {id:'mlb-early',name:'Pre-1960',g:'MLB by era',label:'MLB pre-1960',c:'#bd3039',items:"Babe Ruth|Ty Cobb|Lou Gehrig|Ted Williams|Walter Johnson|Cy Young|Honus Wagner|Joe DiMaggio|Stan Musial|Jackie Robinson|Rogers Hornsby|Jimmie Foxx|Christy Mathewson|Satchel Paige|Lefty Grove|Mel Ott"},
+ {id:'mlb-mid',name:'1960-99',g:'MLB by era',label:'MLB 1960-1999',c:'#bd3039',items:"Willie Mays|Hank Aaron|Mickey Mantle|Roberto Clemente|Sandy Koufax|Bob Gibson|Frank Robinson|Johnny Bench|Mike Schmidt|Nolan Ryan|Rickey Henderson|Tom Seaver|Reggie Jackson|George Brett|Cal Ripken Jr.|Tony Gwynn"},
+ {id:'mlb-now',name:'2000s-now',g:'MLB by era',label:'MLB 2000s-now',c:'#bd3039',items:"Barry Bonds|Albert Pujols|Shohei Ohtani|Mike Trout|Derek Jeter|Ichiro Suzuki|Aaron Judge|Clayton Kershaw|Pedro Martinez|Randy Johnson|Mariano Rivera|Alex Rodriguez|Miguel Cabrera|David Ortiz|Justin Verlander|Roger Clemens"},
+ {id:'mlb-p',name:'Pitchers',g:'MLB by position',label:'MLB pitchers',c:'#bd3039',items:"Walter Johnson|Cy Young|Sandy Koufax|Pedro Martinez|Randy Johnson|Greg Maddux|Clayton Kershaw|Bob Gibson|Nolan Ryan|Tom Seaver|Roger Clemens|Christy Mathewson|Lefty Grove|Justin Verlander|Satchel Paige|Mariano Rivera"},
+ {id:'mlb-if',name:'Infield',g:'MLB by position',label:'MLB infielders',c:'#bd3039',items:"Lou Gehrig|Honus Wagner|Derek Jeter|Albert Pujols|Mike Schmidt|Cal Ripken Jr.|Alex Rodriguez|Rogers Hornsby|Jackie Robinson|George Brett|Jimmie Foxx|Miguel Cabrera|Joe Morgan|Ozzie Smith|Freddie Freeman|Chipper Jones"},
+ {id:'mlb-of',name:'Outfield',g:'MLB by position',label:'MLB outfielders',c:'#bd3039',items:"Babe Ruth|Willie Mays|Hank Aaron|Ted Williams|Barry Bonds|Ty Cobb|Mickey Mantle|Stan Musial|Mike Trout|Ken Griffey Jr.|Roberto Clemente|Joe DiMaggio|Aaron Judge|Rickey Henderson|Tony Gwynn|Ichiro Suzuki"},
+ {id:'mlb-c',name:'C and DH',g:'MLB by position',label:'MLB catchers and DHs',c:'#bd3039',items:"Johnny Bench|Yogi Berra|Ivan Rodriguez|Mike Piazza|Roy Campanella|Carlton Fisk|Gary Carter|Buster Posey|Josh Gibson|Yadier Molina|David Ortiz|Edgar Martinez|Shohei Ohtani|Joe Mauer|Mickey Cochrane|Jorge Posada"}
+);
+
+const FRANCHISES = [
+ ['TOR','Raptors','Toronto',"Vince Carter|Kyle Lowry|DeMar DeRozan|Kawhi Leonard|Chris Bosh|Pascal Siakam|Scottie Barnes|Fred VanVleet|Damon Stoudamire|Tracy McGrady|Jonas Valanciunas|Serge Ibaka"],
+ ['TORh','Maple Leafs','Toronto',"Auston Matthews|Mats Sundin|Darryl Sittler|Dave Keon|Borje Salming|Mitch Marner|Doug Gilmour|Wendel Clark|Frank Mahovlich|Johnny Bower|Tim Horton|Turk Broda|William Nylander|Syl Apps"],
+ ['TORb','Blue Jays','Toronto',"Roy Halladay|Roberto Alomar|Carlos Delgado|Jose Bautista|Vladimir Guerrero Jr.|Dave Stieb|Joe Carter|Tony Fernandez|Josh Donaldson|George Bell|Edwin Encarnacion|Roger Clemens|Bo Bichette|Paul Molitor"],
+ ['ATL','Hawks','NBA',"Dominique Wilkins|Bob Pettit|Trae Young|Dikembe Mutombo|Lou Hudson|Pete Maravich|Joe Johnson|Al Horford|Paul Millsap|Steve Smith"],
+ ['BOS','Celtics','NBA',"Bill Russell|Larry Bird|John Havlicek|Bob Cousy|Paul Pierce|Kevin McHale|Jayson Tatum|Sam Jones|Robert Parish|Dave Cowens|Kevin Garnett|Jaylen Brown"],
+ ['BKN','Nets','NBA',"Jason Kidd|Vince Carter|Julius Erving|Buck Williams|Brook Lopez|Drazen Petrovic|Kevin Durant|Kyrie Irving|Richard Jefferson|Kenyon Martin"],
+ ['CHA','Hornets','NBA',"Kemba Walker|Larry Johnson|Alonzo Mourning|Muggsy Bogues|Dell Curry|Glen Rice|LaMelo Ball|Gerald Wallace|Baron Davis|Al Jefferson"],
+ ['CHI','Bulls','NBA',"Michael Jordan|Scottie Pippen|Derrick Rose|Dennis Rodman|Jimmy Butler|Joakim Noah|Artis Gilmore|Bob Love|Horace Grant|Luol Deng"],
+ ['CLE','Cavaliers','NBA',"LeBron James|Kyrie Irving|Mark Price|Brad Daugherty|Zydrunas Ilgauskas|Donovan Mitchell|Larry Nance|Austin Carr|Kevin Love|Evan Mobley"],
+ ['DAL','Mavericks','NBA',"Dirk Nowitzki|Luka Doncic|Jason Kidd|Mark Aguirre|Rolando Blackman|Michael Finley|Steve Nash|Derek Harper|Jason Terry|Kyrie Irving"],
+ ['DEN','Nuggets','NBA',"Nikola Jokic|Alex English|Carmelo Anthony|Dan Issel|David Thompson|Jamal Murray|Fat Lever|Dikembe Mutombo|Chauncey Billups|Aaron Gordon"],
+ ['DET','Pistons','NBA',"Isiah Thomas|Joe Dumars|Grant Hill|Bill Laimbeer|Dave Bing|Ben Wallace|Chauncey Billups|Dennis Rodman|Bob Lanier|Cade Cunningham|Rip Hamilton"],
+ ['GSW','Warriors','NBA',"Stephen Curry|Wilt Chamberlain|Rick Barry|Klay Thompson|Draymond Green|Kevin Durant|Chris Mullin|Nate Thurmond|Tim Hardaway|Baron Davis"],
+ ['HOU','Rockets','NBA',"Hakeem Olajuwon|James Harden|Moses Malone|Yao Ming|Tracy McGrady|Calvin Murphy|Rudy Tomjanovich|Clyde Drexler|Elvin Hayes|Ralph Sampson"],
+ ['IND','Pacers','NBA',"Reggie Miller|Paul George|Tyrese Haliburton|Rik Smits|Jermaine O'Neal|Mel Daniels|Roger Brown|George McGinnis|Danny Granger|Chuck Person"],
+ ['LAC','Clippers','NBA',"Kawhi Leonard|Chris Paul|Blake Griffin|Bob McAdoo|Elton Brand|Paul George|DeAndre Jordan|James Harden|Danny Manning|Lou Williams"],
+ ['LAL','Lakers','NBA',"Magic Johnson|Kareem Abdul-Jabbar|Kobe Bryant|LeBron James|Jerry West|Shaquille O'Neal|Elgin Baylor|Wilt Chamberlain|George Mikan|James Worthy|Anthony Davis|Pau Gasol"],
+ ['MEM','Grizzlies','NBA',"Ja Morant|Marc Gasol|Zach Randolph|Mike Conley|Pau Gasol|Tony Allen|Jaren Jackson Jr.|Desmond Bane|Shareef Abdur-Rahim|Rudy Gay"],
+ ['MIA','Heat','NBA',"Dwyane Wade|LeBron James|Alonzo Mourning|Jimmy Butler|Chris Bosh|Shaquille O'Neal|Tim Hardaway|Bam Adebayo|Udonis Haslem|Glen Rice"],
+ ['MIL','Bucks','NBA',"Kareem Abdul-Jabbar|Giannis Antetokounmpo|Oscar Robertson|Sidney Moncrief|Ray Allen|Marques Johnson|Bob Dandridge|Khris Middleton|Glenn Robinson|Michael Redd"],
+ ['MIN','Timberwolves','NBA',"Kevin Garnett|Anthony Edwards|Karl-Anthony Towns|Kevin Love|Rudy Gobert|Wally Szczerbiak|Sam Cassell|Latrell Sprewell|Stephon Marbury|Andrew Wiggins"],
+ ['NOP','Pelicans','NBA',"Anthony Davis|Chris Paul|Zion Williamson|David West|Jrue Holiday|Brandon Ingram|Tyson Chandler|Peja Stojakovic|Eric Gordon|CJ McCollum"],
+ ['NYK','Knicks','NBA',"Patrick Ewing|Walt Frazier|Willis Reed|Jalen Brunson|Carmelo Anthony|Bernard King|Earl Monroe|Dave DeBusschere|Bill Bradley|Karl-Anthony Towns|Allan Houston|Charles Oakley"],
+ ['OKC','Thunder/Sonics','NBA',"Kevin Durant|Shai Gilgeous-Alexander|Russell Westbrook|Gary Payton|Shawn Kemp|James Harden|Jack Sikma|Spencer Haywood|Ray Allen|Chet Holmgren|Jalen Williams"],
+ ['ORL','Magic','NBA',"Shaquille O'Neal|Dwight Howard|Penny Hardaway|Tracy McGrady|Nick Anderson|Paolo Banchero|Franz Wagner|Grant Hill|Hedo Turkoglu|Rashard Lewis"],
+ ['PHI','76ers','NBA',"Wilt Chamberlain|Julius Erving|Allen Iverson|Moses Malone|Charles Barkley|Joel Embiid|Hal Greer|Maurice Cheeks|Billy Cunningham|Tyrese Maxey"],
+ ['PHX','Suns','NBA',"Charles Barkley|Steve Nash|Devin Booker|Amar'e Stoudemire|Kevin Johnson|Walter Davis|Paul Westphal|Shawn Marion|Alvan Adams|Chris Paul"],
+ ['POR','Trail Blazers','NBA',"Damian Lillard|Clyde Drexler|Bill Walton|LaMarcus Aldridge|Terry Porter|Brandon Roy|Maurice Lucas|Arvydas Sabonis|CJ McCollum|Rasheed Wallace"],
+ ['SAC','Kings','NBA',"Oscar Robertson|Chris Webber|Mitch Richmond|De'Aaron Fox|Domantas Sabonis|Tiny Archibald|Jack Twyman|Peja Stojakovic|Vlade Divac|DeMarcus Cousins"],
+ ['SAS','Spurs','NBA',"Tim Duncan|David Robinson|George Gervin|Tony Parker|Manu Ginobili|Kawhi Leonard|Victor Wembanyama|Sean Elliott|Bruce Bowen|Alvin Robertson"],
+ ['UTA','Jazz','NBA',"Karl Malone|John Stockton|Pete Maravich|Adrian Dantley|Donovan Mitchell|Rudy Gobert|Deron Williams|Mark Eaton|Andrei Kirilenko|Jeff Hornacek"],
+ ['WAS','Wizards/Bullets','NBA',"Wes Unseld|Elvin Hayes|John Wall|Bradley Beal|Gilbert Arenas|Earl Monroe|Gus Johnson|Walt Bellamy|Bob Dandridge|Chris Webber"]
+];
+TEAMC.CHA = '#1d8a99';
+const franchiseCat = {id:'franchises',name:'Franchises',c:'#ce1141',blurb:'Best player in every NBA franchise, plus Toronto',subs:
+  FRANCHISES.map(([code, nm, grp, items]) => ({id:'fr-' + code.toLowerCase(), name:nm, g:grp, label:nm + ' all-time', c:TEAMC[code], fr:true, items}))};
+
+const teamsCat = {id:'teams',name:'Teams and seasons',c:'#f5c542',blurb:'Greatest NBA teams and single seasons',subs:[
+ {id:'nba-teams',name:'Greatest NBA teams',c:'#f5c542',items:"1995-96 Bulls|1996-97 Bulls|1991-92 Bulls|2016-17 Warriors|2015-16 Warriors|1985-86 Celtics|1986-87 Lakers|1971-72 Lakers|2000-01 Lakers|1982-83 76ers|1966-67 76ers|2013-14 Spurs|2012-13 Heat|1988-89 Pistons|2007-08 Celtics|2023-24 Celtics|2024-25 Thunder|1964-65 Celtics|1970-71 Bucks|2025-26 Knicks"},
+ {id:'nba-seasons',name:'Best NBA seasons',c:'#e5484d',items:"Wilt Chamberlain 1961-62|Michael Jordan 1990-91|Michael Jordan 1995-96|Shaquille O'Neal 1999-00|LeBron James 2012-13|LeBron James 2008-09|Stephen Curry 2015-16|Kareem Abdul-Jabbar 1971-72|Larry Bird 1985-86|Magic Johnson 1986-87|Hakeem Olajuwon 1993-94|Russell Westbrook 2016-17|Nikola Jokic 2023-24|Giannis Antetokounmpo 2019-20|Kobe Bryant 2005-06|Oscar Robertson 1961-62|Shai Gilgeous-Alexander 2024-25|Tim Duncan 2002-03|Dirk Nowitzki 2010-11|James Harden 2018-19"}
+]};
+
+const drinksCat = {id:'drinks',name:'Drinks',c:'#2ab3e8',blurb:'Sodas, energy drinks, coffee chains',subs:[
+ {id:'sodas',name:'Sodas',c:'#e5484d',items:"Coca-Cola|Pepsi|Sprite|Dr Pepper|A&W Root Beer|Mountain Dew|Fanta|Canada Dry Ginger Ale|7UP|Crush Orange|Cream soda|Coke Zero|Diet Coke|Barq's"},
+ {id:'energy',name:'Energy drinks',c:'#3ea55b',items:"Red Bull|Monster|Celsius|Prime|Bang|Rockstar|Ghost|Alani Nu|C4|Reign|Guru|NOS"},
+ {id:'coffee',name:'Coffee chains',c:'#a0703c',items:"Tim Hortons|Starbucks|Dunkin'|McCafe|Second Cup|Blue Bottle|Dutch Bros|Peet's Coffee|Costa Coffee|Balzac's|Pilot Coffee Roasters|Coffee Culture"}
+]};
+const fashionCat = {id:'fashion',name:'Fashion',c:'#e056b5',blurb:'Streetwear and luxury houses',subs:[
+ {id:'streetwear',name:'Streetwear',c:'#e5484d',items:"Supreme|Stussy|Palace|BAPE|Off-White|Fear of God|Essentials|Kith|Aime Leon Dore|Corteiz|Trapstar|Chrome Hearts|Represent|Rhude|Sp5der|Hellstar|Denim Tears|Golf Wang|Billionaire Boys Club|Anti Social Social Club"},
+ {id:'luxury',name:'Luxury houses',c:'#c9a227',items:"Louis Vuitton|Gucci|Prada|Chanel|Dior|Balenciaga|Hermes|Versace|Saint Laurent|Bottega Veneta|Givenchy|Burberry|Moncler|Fendi|Loewe|Celine|Valentino|Rick Owens|Maison Margiela|Amiri"}
+]};
+const creatorsCat = {id:'creators',name:'Creators',c:'#ff4d4d',blurb:'YouTubers, streamers, podcasts',subs:[
+ {id:'youtubers',name:'YouTubers',c:'#ff3b3b',items:"MrBeast|PewDiePie|Dude Perfect|Markiplier|Sidemen|Logan Paul|KSI|Casey Neistat|Smosh|Jake Paul|Ryan Trahan|Mark Rober|MKBHD|Airrack|Danny Duncan|FaZe Clan|Nelk Boys|Dream"},
+ {id:'streamers',name:'Streamers',c:'#9146ff',items:"Kai Cenat|IShowSpeed|xQc|Ninja|Pokimane|Adin Ross|TimTheTatman|Shroud|Ludwig|Valkyrae|Jynxzi|Caseoh|Sketch|Duke Dennis|Fanum|Agent 00|Tfue"},
+ {id:'podcasts',name:'Podcasts',c:'#21b6a8',items:"The Joe Rogan Experience|Call Her Daddy|This Past Weekend (Theo Von)|Club Shay Shay|New Heights|Impaulsive|Flagrant|The Breakfast Club|Million Dollaz Worth of Game|SmartLess|Armchair Expert|The Bill Simmons Podcast|The Pat McAfee Show|Pardon My Take|No Jumper|Full Send Podcast|Nightcap|Brilliant Idiots"}
+]};
+(function order() {
+  const byId = id => CATS.find(c => c.id === id);
+  const want = ['athletes', franchiseCat, teamsCat, 'music', 'albums', 'movies', 'shows', 'food', drinksCat, 'games-cat', 'brands-cat', fashionCat, creatorsCat];
+  const next = want.map(w => typeof w === 'string' ? byId(w) : w);
+  CATS.splice(0, CATS.length, ...next);
+})();
+
+FACEOFFS.push(['nhl-g','Patrick Roy','Martin Brodeur'], ['fr-tor','Vince Carter','Kyle Lowry'], ['nba-teams','1995-96 Bulls','2016-17 Warriors'], ['coffee','Tim Hortons','Starbucks'], ['energy','Red Bull','Monster'], ['youtubers','MrBeast','PewDiePie'], ['mlb-p','Sandy Koufax','Pedro Martinez'], ['luxury','Louis Vuitton','Gucci']);
+
+// Info lines: "Name=part · part · *award"   (* marks an award chip)
+const INFO = {
+ 'nba-teams':"1995-96 Bulls=72-10 · Champions|1996-97 Bulls=69-13 · Champions|1991-92 Bulls=67-15 · Champions|2016-17 Warriors=67-15 · 16-1 in playoffs · Champions|2015-16 Warriors=73-9 · Lost Finals|1985-86 Celtics=67-15 · Champions|1986-87 Lakers=65-17 · Champions|1971-72 Lakers=69-13 · 33-game win streak · Champions|2000-01 Lakers=15-1 in playoffs · Champions|1982-83 76ers=65-17 · Champions|1966-67 76ers=68-13 · Champions|2013-14 Spurs=62-20 · Champions|2012-13 Heat=66-16 · 27-game win streak · Champions|1988-89 Pistons=63-19 · Champions|2007-08 Celtics=66-16 · Champions|2023-24 Celtics=64-18 · Champions|2024-25 Thunder=68-14 · Champions|1964-65 Celtics=62-18 · Champions|1970-71 Bucks=66-16 · Champions|2025-26 Knicks=Beat Spurs 4-1 · Champions",
+ 'nba-seasons':"Wilt Chamberlain 1961-62=50.4 PPG · 100-point game|Michael Jordan 1990-91=*MVP · *Finals MVP · First title|Michael Jordan 1995-96=72-10 · *MVP · *Finals MVP|Shaquille O'Neal 1999-00=29.7 PPG · *MVP · *Finals MVP|LeBron James 2012-13=*MVP · *Finals MVP|LeBron James 2008-09=66-16 · *MVP|Stephen Curry 2015-16=402 threes · *Unanimous MVP|Kareem Abdul-Jabbar 1971-72=34.8 PPG · *MVP|Larry Bird 1985-86=*MVP · *Finals MVP|Magic Johnson 1986-87=*MVP · *Finals MVP|Hakeem Olajuwon 1993-94=*MVP · *Finals MVP · *DPOY|Russell Westbrook 2016-17=Triple-double average · *MVP|Nikola Jokic 2023-24=26.4 / 12.4 / 9.0 · *MVP|Giannis Antetokounmpo 2019-20=*MVP · *DPOY|Kobe Bryant 2005-06=35.4 PPG · 81-point game|Oscar Robertson 1961-62=Triple-double average|Shai Gilgeous-Alexander 2024-25=Scoring title · *MVP · *Finals MVP|Tim Duncan 2002-03=*MVP · *Finals MVP|Dirk Nowitzki 2010-11=*Finals MVP · Beat the Heat|James Harden 2018-19=36.1 PPG",
+ 'm-action':"The Dark Knight=2008 · Christopher Nolan|Mad Max: Fury Road=2015 · George Miller|Die Hard=1988 · John McTiernan|Terminator 2=1991 · James Cameron|The Matrix=1999 · The Wachowskis|Gladiator=2000 · Ridley Scott · *Best Picture|John Wick=2014 · Chad Stahelski|Top Gun: Maverick=2022 · Joseph Kosinski|Mission: Impossible - Fallout=2018 · Christopher McQuarrie|Inception=2010 · Christopher Nolan|Avengers: Endgame=2019 · Russo brothers|Raiders of the Lost Ark=1981 · Steven Spielberg|Aliens=1986 · James Cameron|Heat=1995 · Michael Mann|Kill Bill: Vol. 1=2003 · Quentin Tarantino|The Bourne Ultimatum=2007 · Paul Greengrass|Speed=1994 · Jan de Bont|Lethal Weapon=1987 · Richard Donner|Casino Royale=2006 · Martin Campbell|Black Panther=2018 · Ryan Coogler|Logan=2017 · James Mangold|Predator=1987 · John McTiernan|Point Break=1991 · Kathryn Bigelow|Face/Off=1997 · John Woo",
+ 'm-comedy':"Superbad=2007 · Greg Mottola|Step Brothers=2008 · Adam McKay|Anchorman=2004 · Adam McKay|The Hangover=2009 · Todd Phillips|Dumb and Dumber=1994 · Farrelly brothers|Groundhog Day=1993 · Harold Ramis|Ferris Bueller's Day Off=1986 · John Hughes|Airplane!=1980 · Zucker, Abrahams and Zucker|Monty Python and the Holy Grail=1975 · Gilliam and Jones|Borat=2006 · Larry Charles|Bridesmaids=2011 · Paul Feig|Mean Girls=2004 · Mark Waters|Napoleon Dynamite=2004 · Jared Hess|Talladega Nights=2006 · Adam McKay|Happy Gilmore=1996 · Dennis Dugan|Billy Madison=1995 · Tamra Davis|21 Jump Street=2012 · Lord and Miller|Wedding Crashers=2005 · David Dobkin|The Big Lebowski=1998 · Coen brothers|Friday=1995 · F. Gary Gray|Coming to America=1988 · John Landis|Tropic Thunder=2008 · Ben Stiller|Old School=2003 · Todd Phillips|Zoolander=2001 · Ben Stiller",
+ 'm-drama':"The Godfather=1972 · Francis Ford Coppola · *Best Picture|The Shawshank Redemption=1994 · Frank Darabont|The Godfather Part II=1974 · Francis Ford Coppola · *Best Picture|Pulp Fiction=1994 · Quentin Tarantino|Goodfellas=1990 · Martin Scorsese|Forrest Gump=1994 · Robert Zemeckis · *Best Picture|Fight Club=1999 · David Fincher|Schindler's List=1993 · Steven Spielberg · *Best Picture|The Departed=2006 · Martin Scorsese · *Best Picture|Good Will Hunting=1997 · Gus Van Sant|Whiplash=2014 · Damien Chazelle|There Will Be Blood=2007 · Paul Thomas Anderson|Taxi Driver=1976 · Martin Scorsese|12 Angry Men=1957 · Sidney Lumet|Scarface=1983 · Brian De Palma|Casino=1995 · Martin Scorsese|Titanic=1997 · James Cameron · *Best Picture|The Social Network=2010 · David Fincher|Oppenheimer=2023 · Christopher Nolan · *Best Picture|Parasite=2019 · Bong Joon-ho · *Best Picture|Moonlight=2016 · Barry Jenkins · *Best Picture|Saving Private Ryan=1998 · Steven Spielberg|A Beautiful Mind=2001 · Ron Howard · *Best Picture|The Wolf of Wall Street=2013 · Martin Scorsese|Catch Me If You Can=2002 · Steven Spielberg",
+ 'm-horror':"The Shining=1980 · Stanley Kubrick|Get Out=2017 · Jordan Peele|The Exorcist=1973 · William Friedkin|Halloween=1978 · John Carpenter|Psycho=1960 · Alfred Hitchcock|Alien=1979 · Ridley Scott|A Nightmare on Elm Street=1984 · Wes Craven|Scream=1996 · Wes Craven|Hereditary=2018 · Ari Aster|The Conjuring=2013 · James Wan|It=2017 · Andy Muschietti|The Texas Chain Saw Massacre=1974 · Tobe Hooper|Jaws=1975 · Steven Spielberg|The Silence of the Lambs=1991 · Jonathan Demme · *Best Picture|Saw=2004 · James Wan|Us=2019 · Jordan Peele|The Thing=1982 · John Carpenter|Rosemary's Baby=1968 · Roman Polanski|Paranormal Activity=2007 · Oren Peli|Sinners=2025 · Ryan Coogler",
+ 'm-animated':"Toy Story=1995 · Pixar|The Lion King=1994 · Disney|Spirited Away=2001 · Studio Ghibli · *Best Animated Feature|Shrek=2001 · DreamWorks · *Best Animated Feature|Up=2009 · Pixar · *Best Animated Feature|Finding Nemo=2003 · Pixar · *Best Animated Feature|WALL-E=2008 · Pixar · *Best Animated Feature|Spider-Man: Into the Spider-Verse=2018 · Sony · *Best Animated Feature|Inside Out=2015 · Pixar · *Best Animated Feature|Coco=2017 · Pixar · *Best Animated Feature|The Incredibles=2004 · Pixar · *Best Animated Feature|Ratatouille=2007 · Pixar · *Best Animated Feature|Monsters, Inc.=2001 · Pixar|Aladdin=1992 · Disney|Beauty and the Beast=1991 · Disney|Zootopia=2016 · Disney · *Best Animated Feature|Frozen=2013 · Disney · *Best Animated Feature|How to Train Your Dragon=2010 · DreamWorks|Kung Fu Panda=2008 · DreamWorks|Toy Story 3=2010 · Pixar · *Best Animated Feature|Spider-Man: Across the Spider-Verse=2023 · Sony|My Neighbor Totoro=1988 · Studio Ghibli|The Iron Giant=1999 · Brad Bird|Despicable Me=2010 · Illumination",
+ 's-drama':"Breaking Bad=2008-13 · AMC · *2x Emmy Best Drama|The Sopranos=1999-2007 · HBO · *2x Emmy Best Drama|The Wire=2002-08 · HBO|Game of Thrones=2011-19 · HBO · *4x Emmy Best Drama|Mad Men=2007-15 · AMC · *4x Emmy Best Drama|Better Call Saul=2015-22 · AMC|Succession=2018-23 · HBO · *3x Emmy Best Drama|The Last of Us=2023- · HBO|Stranger Things=2016-25 · Netflix|Ozark=2017-22 · Netflix|Peaky Blinders=2013-22 · BBC|True Detective=2014- · HBO|Prison Break=2005-17 · Fox|Lost=2004-10 · ABC · *Emmy Best Drama|The Walking Dead=2010-22 · AMC|Narcos=2015-17 · Netflix|Dexter=2006-13 · Showtime|House of Cards=2013-18 · Netflix|Yellowstone=2018-24 · Paramount|Euphoria=2019- · HBO|The Bear=2022- · FX · *Emmy Best Comedy|Severance=2022- · Apple TV+|Boardwalk Empire=2010-14 · HBO|Friday Night Lights=2006-11 · NBC",
+ 's-comedy':"The Office=2005-13 · NBC · *Emmy Best Comedy|Seinfeld=1989-98 · NBC · *Emmy Best Comedy|Friends=1994-2004 · NBC · *Emmy Best Comedy|Parks and Recreation=2009-15 · NBC|Curb Your Enthusiasm=2000-24 · HBO|It's Always Sunny in Philadelphia=2005- · FX|Arrested Development=2003-19 · Fox · *Emmy Best Comedy|Brooklyn Nine-Nine=2013-21 · Fox and NBC|Schitt's Creek=2015-20 · CBC · *Emmy Best Comedy|How I Met Your Mother=2005-14 · CBS|The Fresh Prince of Bel-Air=1990-96 · NBC|Modern Family=2009-20 · ABC · *5x Emmy Best Comedy|Community=2009-15 · NBC|30 Rock=2006-13 · NBC · *3x Emmy Best Comedy|Ted Lasso=2020- · Apple TV+ · *2x Emmy Best Comedy|Atlanta=2016-22 · FX|Entourage=2004-11 · HBO|Silicon Valley=2014-19 · HBO|New Girl=2011-18 · Fox|Veep=2012-19 · HBO · *3x Emmy Best Comedy|Abbott Elementary=2021- · ABC|Superstore=2015-21 · NBC|Malcolm in the Middle=2000-06 · Fox|Everybody Loves Raymond=1996-2005 · CBS · *2x Emmy Best Comedy",
+ 's-animated':"The Simpsons=1989- · Fox|Family Guy=1999- · Fox|South Park=1997- · Comedy Central|Avatar: The Last Airbender=2005-08 · Nickelodeon|Rick and Morty=2013- · Adult Swim|SpongeBob SquarePants=1999- · Nickelodeon|BoJack Horseman=2014-20 · Netflix|Futurama=1999- · Fox and Hulu|King of the Hill=1997- · Fox and Hulu|Bob's Burgers=2011- · Fox|Arcane=2021-24 · Netflix|Adventure Time=2010-18 · Cartoon Network|The Boondocks=2005-14 · Adult Swim|Batman: The Animated Series=1992-95 · Fox Kids|Archer=2009-23 · FX|Gravity Falls=2012-16 · Disney|Invincible=2021- · Prime Video|Dragon Ball Z=1989-96 · Toei|Naruto=2002-17 · Pierrot|Attack on Titan=2013-23 · Wit and MAPPA",
+ 'rap':"Tupac=1991-96 · Oakland|The Notorious B.I.G.=1993-97 · Brooklyn|Jay-Z=1996- · Brooklyn|Nas=1994- · Queens|Eminem=1996- · Detroit|Kendrick Lamar=2011- · Compton|Drake=2009- · Toronto|Kanye West=2004- · Chicago|Lil Wayne=1999- · New Orleans|J. Cole=2011- · Fayetteville|Snoop Dogg=1993- · Long Beach|Dr. Dre=1986- · Compton|OutKast=1994-2006 · Atlanta|Ice Cube=1986- · Los Angeles|50 Cent=2003- · Queens|Travis Scott=2015- · Houston|Future=2012- · Atlanta|Nicki Minaj=2010- · Queens|Lauryn Hill=1994- · New Jersey|Missy Elliott=1997- · Virginia|Rakim=1986- · Long Island|Wu-Tang Clan=1993- · Staten Island|A Tribe Called Quest=1990-2016 · Queens|Run-DMC=1984-2002 · Queens|Lil Baby=2017- · Atlanta|Tyler, the Creator=2011- · Los Angeles|Mac Miller=2010-18 · Pittsburgh|DMX=1998-2021 · Yonkers",
+ 'country':"Johnny Cash=1955-2003 · Arkansas|Dolly Parton=1967- · Tennessee|Willie Nelson=1962- · Texas|George Strait=1981- · Texas|Garth Brooks=1989- · Oklahoma|Merle Haggard=1963-2016 · California|Hank Williams=1947-52 · Alabama|Patsy Cline=1957-63 · Virginia|Loretta Lynn=1960-2022 · Kentucky|Reba McEntire=1977- · Oklahoma|Shania Twain=1993- · Ontario|Alan Jackson=1989- · Georgia|Kenny Rogers=1958-2017 · Texas|Waylon Jennings=1958-2002 · Texas|Tim McGraw=1992- · Louisiana|Kenny Chesney=1993- · Tennessee|Carrie Underwood=2005- · Oklahoma|Luke Combs=2017- · North Carolina|Morgan Wallen=2016- · Tennessee|Chris Stapleton=2015- · Kentucky|Zach Bryan=2019- · Oklahoma|Keith Urban=1991- · Australia|Brad Paisley=1999- · West Virginia|Toby Keith=1993-2024 · Oklahoma",
+ 'rnb':"Marvin Gaye=1961-84 · Washington, D.C.|Stevie Wonder=1961- · Michigan|Aretha Franklin=1956-2018 · Detroit|Whitney Houston=1985-2012 · New Jersey|Beyonce=1997- · Houston|Usher=1994- · Atlanta|The Weeknd=2011- · Toronto|Frank Ocean=2011- · New Orleans|SZA=2014- · New Jersey|Alicia Keys=2001- · New York|Mary J. Blige=1992- · New York|Prince=1978-2016 · Minneapolis|Luther Vandross=1981-2005 · New York|Al Green=1967- · Memphis|Sam Cooke=1951-64 · Chicago|Ray Charles=1947-2004 · Georgia|Otis Redding=1962-67 · Georgia|Janet Jackson=1982- · Gary, Indiana|Brandy=1994- · Mississippi|Aaliyah=1994-2001 · Detroit|D'Angelo=1995-2025 · Virginia|Daniel Caesar=2014- · Toronto|Brent Faiyaz=2016- · Maryland|Erykah Badu=1997- · Dallas|Boyz II Men=1991- · Philadelphia|TLC=1992- · Atlanta",
+ 'pop':"Michael Jackson=1971-2009 · Gary, Indiana|Madonna=1982- · Michigan|Taylor Swift=2006- · Pennsylvania|Rihanna=2005- · Barbados|Lady Gaga=2008- · New York|Britney Spears=1998- · Louisiana|Justin Bieber=2009- · Stratford, Ontario|Ariana Grande=2013- · Florida|Elton John=1969- · England|Mariah Carey=1990- · New York|Bruno Mars=2010- · Hawaii|Katy Perry=2008- · California|Adele=2008- · London|Ed Sheeran=2011- · England|Billie Eilish=2016- · Los Angeles|Dua Lipa=2015- · London|Harry Styles=2017- · England|Justin Timberlake=2002- · Tennessee|ABBA=1972- · Sweden|Olivia Rodrigo=2021- · California|Sabrina Carpenter=2015- · Pennsylvania|Shawn Mendes=2014- · Pickering, Ontario|Celine Dion=1981- · Quebec|George Michael=1982-2016 · London|Bee Gees=1958-2003 · Australia",
+ 'rock':"The Beatles=1960-70 · Liverpool|Led Zeppelin=1968-80 · London|The Rolling Stones=1962- · London|Queen=1970- · London|Pink Floyd=1965-2014 · London|Nirvana=1987-94 · Aberdeen, Washington|Jimi Hendrix=1966-70 · Seattle|AC/DC=1973- · Australia|The Who=1964- · London|Guns N' Roses=1985- · Los Angeles|Metallica=1981- · Los Angeles|Elvis Presley=1954-77 · Memphis|U2=1976- · Dublin|Red Hot Chili Peppers=1983- · Los Angeles|Foo Fighters=1994- · Seattle|Bruce Springsteen=1972- · New Jersey|David Bowie=1964-2016 · London|Fleetwood Mac=1967- · London|The Doors=1965-73 · Los Angeles|Eagles=1971- · Los Angeles|Aerosmith=1970-2024 · Boston|Black Sabbath=1968-2025 · Birmingham|Radiohead=1985- · Oxford|Linkin Park=1996- · Los Angeles|Oasis=1991- · Manchester|Bon Jovi=1983- · New Jersey",
+ 'rap-albums':"Illmatic=Nas · 1994|The Chronic=Dr. Dre · 1992|Ready to Die=The Notorious B.I.G. · 1994|To Pimp a Butterfly=Kendrick Lamar · 2015|good kid, m.A.A.d city=Kendrick Lamar · 2012|My Beautiful Dark Twisted Fantasy=Kanye West · 2010|The Marshall Mathers LP=Eminem · 2000|Reasonable Doubt=Jay-Z · 1996|The Blueprint=Jay-Z · 2001|Enter the Wu-Tang (36 Chambers)=Wu-Tang Clan · 1993|The Miseducation of Lauryn Hill=Lauryn Hill · 1998 · *Album of the Year|Aquemini=OutKast · 1998|Get Rich or Die Tryin'=50 Cent · 2003|Tha Carter III=Lil Wayne · 2008|The College Dropout=Kanye West · 2004|Graduation=Kanye West · 2007|All Eyez on Me=Tupac · 1996|The Low End Theory=A Tribe Called Quest · 1991|Take Care=Drake · 2011|2014 Forest Hills Drive=J. Cole · 2014|Astroworld=Travis Scott · 2018|Madvillainy=Madvillain · 2004|Stankonia=OutKast · 2000|DAMN.=Kendrick Lamar · 2017 · *Pulitzer Prize",
+ 'albums-all':"Thriller=Michael Jackson · 1982 · *Album of the Year|Abbey Road=The Beatles · 1969|Rumours=Fleetwood Mac · 1977 · *Album of the Year|Back in Black=AC/DC · 1980|The Dark Side of the Moon=Pink Floyd · 1973|Nevermind=Nirvana · 1991|Purple Rain=Prince · 1984|Lemonade=Beyonce · 2016|21=Adele · 2011 · *Album of the Year|1989=Taylor Swift · 2014 · *Album of the Year|Songs in the Key of Life=Stevie Wonder · 1976 · *Album of the Year|What's Going On=Marvin Gaye · 1971|Led Zeppelin IV=Led Zeppelin · 1971|Pet Sounds=The Beach Boys · 1966|Appetite for Destruction=Guns N' Roses · 1987|Blonde=Frank Ocean · 2016|Channel Orange=Frank Ocean · 2012|After Hours=The Weeknd · 2020|Born to Run=Bruce Springsteen · 1975|Hotel California=Eagles · 1976|OK Computer=Radiohead · 1997|Kind of Blue=Miles Davis · 1959|Sgt. Pepper's Lonely Hearts Club Band=The Beatles · 1967 · *Album of the Year|Bad=Michael Jackson · 1987",
+ 'songs':"Bohemian Rhapsody=Queen · 1975|Billie Jean=Michael Jackson · 1983|Smells Like Teen Spirit=Nirvana · 1991|Hotel California=Eagles · 1977 · *Record of the Year|Stairway to Heaven=Led Zeppelin · 1971|Lose Yourself=Eminem · 2002 · *Oscar winner|Juicy=The Notorious B.I.G. · 1994|Hey Jude=The Beatles · 1968|Like a Rolling Stone=Bob Dylan · 1965|Imagine=John Lennon · 1971|Purple Rain=Prince · 1984|Sweet Child O' Mine=Guns N' Roses · 1987|I Will Always Love You=Whitney Houston · 1992 · *Record of the Year|Respect=Aretha Franklin · 1967|Crazy in Love=Beyonce · 2003|Umbrella=Rihanna · 2007|Blinding Lights=The Weeknd · 2019|Mr. Brightside=The Killers · 2003|In Da Club=50 Cent · 2003|Hotline Bling=Drake · 2015|Alright=Kendrick Lamar · 2015|Hypnotize=The Notorious B.I.G. · 1997|Nuthin' but a 'G' Thang=Dr. Dre · 1992|Sicko Mode=Travis Scott · 2018"
+};
+const INFOMAP = {};
+for (const sid in INFO) { INFOMAP[sid] = {}; INFO[sid].split('|').forEach(r => { const i = r.indexOf('='); INFOMAP[sid][r.slice(0, i)] = r.slice(i + 1).split(' · '); }); }
+
+// ---------- v4: Sports restructure ----------
+(function () {
+  const get = id => CATS.find(c => c.id === id);
+  const ath = get('athletes'), fr = get('franchises'), tm = get('teams');
+  const pick = (cat, id) => { const i = cat.subs.findIndex(s => s.id === id); return cat.subs.splice(i, 1)[0]; };
+  const nba = pick(ath, 'nba'), nhl = pick(ath, 'nhl'), mlb = pick(ath, 'mlb');
+  ath.subs.push({id:'nba-pre80', name:'Pre-1980', g:'NBA by decade', label:'NBA pre-1980', c:'#e5484d', items:"Bill Russell|Wilt Chamberlain|Oscar Robertson|Jerry West|Elgin Baylor|John Havlicek|Bob Cousy|Bob Pettit|George Mikan|Kareem Abdul-Jabbar|Julius Erving|Rick Barry|Hal Greer|Sam Jones|Elvin Hayes|George Gervin"});
+  // sport tags from the era/position lists
+  window.TAGS = {nba:{}, nhl:{}, mlb:{}};
+  window.FILTERS = {nba:{era:[], pos:[]}, nhl:{era:[], pos:[]}, mlb:{era:[], pos:[]}};
+  ath.subs.forEach(s => {
+    const sp = s.id.split('-')[0], kind = /position/i.test(s.g) ? 'pos' : 'era';
+    if (!FILTERS[sp][kind].includes(s.name)) FILTERS[sp][kind].push(s.name);
+    s.items.split('|').forEach(n => { const t = (TAGS[sp][n] ||= {era:[], pos:[]}); if (!t[kind].includes(s.name)) t[kind].push(s.name); });
+  });
+  FILTERS.nba.era.sort((a, b) => (a === 'Pre-1980' ? -1 : b === 'Pre-1980' ? 1 : 0));
+  // sport-level pools = union of everything in that sport
+  [[nba,'nba'],[nhl,'nhl'],[mlb,'mlb']].forEach(([s, sp]) => {
+    const names = new Set(s.items.split('|')); Object.keys(TAGS[sp]).forEach(n => names.add(n));
+    s.items = [...names].join('|'); s.ath = sp; s.g = 'Athletes'; s.label = sp.toUpperCase();
+  });
+  nba.c = '#e5484d'; nhl.c = '#2e5baa'; mlb.c = '#bd3039';
+  const all = {id:'ath-all', name:'All', g:'Athletes', label:'All athletes', ath:'all', c:'#8b6dff', items:
+    "Michael Jordan|LeBron James|Kareem Abdul-Jabbar|Magic Johnson|Larry Bird|Bill Russell|Wilt Chamberlain|Kobe Bryant|Tim Duncan|Shaquille O'Neal|Hakeem Olajuwon|Stephen Curry|Kevin Durant|Nikola Jokic|Giannis Antetokounmpo|Oscar Robertson|Jerry West|Julius Erving|Kevin Garnett|Dirk Nowitzki|" +
+    "Wayne Gretzky|Mario Lemieux|Bobby Orr|Gordie Howe|Sidney Crosby|Alex Ovechkin|Connor McDavid|Mark Messier|Jaromir Jagr|Patrick Roy|Martin Brodeur|Dominik Hasek|Maurice Richard|Jean Beliveau|Steve Yzerman|Nicklas Lidstrom|Ray Bourque|Joe Sakic|Bobby Hull|Guy Lafleur|" +
+    "Babe Ruth|Willie Mays|Hank Aaron|Ted Williams|Barry Bonds|Ty Cobb|Lou Gehrig|Mickey Mantle|Stan Musial|Shohei Ohtani|Mike Trout|Derek Jeter|Ken Griffey Jr.|Albert Pujols|Jackie Robinson|Roberto Clemente|Walter Johnson|Sandy Koufax|Mariano Rivera|Pedro Martinez"};
+  const teams = pick(tm, 'nba-teams');
+  Object.assign(teams, {name:'Greatest teams', g:'Teams', label:'Greatest teams ever', team:true});
+  teams.items += "|1976-77 Canadiens|1984-85 Oilers|1955-56 Canadiens|2001-02 Red Wings|1927 Yankees|1998 Yankees|1975 Reds|1939 Yankees|2018 Red Sox";
+  const frBest = {id:'fr-best', name:'Best franchises', g:'Teams', label:'Best franchises ever', team:true, c:'#f5c542', items:
+    "Boston Celtics|Los Angeles Lakers|Golden State Warriors|Chicago Bulls|San Antonio Spurs|Miami Heat|New York Knicks|Philadelphia 76ers|Montreal Canadiens|Toronto Maple Leafs|Detroit Red Wings|Boston Bruins|Edmonton Oilers|Chicago Blackhawks|Pittsburgh Penguins|New York Yankees|Los Angeles Dodgers|St. Louis Cardinals|Boston Red Sox|San Francisco Giants|Oakland Athletics|Toronto Blue Jays|Toronto Raptors"};
+  const sports = {id:'sports', name:'Sports', c:'#e5484d', blurb:'Athletes across NBA, NHL, MLB, plus the greatest teams', subs:[all, nba, nhl, mlb, teams, frBest]};
+  ath.hidden = fr.hidden = tm.hidden = true;
+  const rest = CATS.filter(c => ![ath, fr, tm].includes(c));
+  CATS.splice(0, CATS.length, sports, ...rest, ath, fr, tm);
+  window.FR_COLORS = {"Boston Celtics":'#007A33',"Los Angeles Lakers":'#6B3FA0',"Golden State Warriors":'#1D5FC2',"Chicago Bulls":'#CE1141',"San Antonio Spurs":'#8A8D8F',"Miami Heat":'#98002E',"New York Knicks":'#F58426',"Philadelphia 76ers":'#006BB6',"Montreal Canadiens":'#AF1E2D',"Toronto Maple Leafs":'#1F5BA8',"Detroit Red Wings":'#CE1126',"Boston Bruins":'#D9A017',"Edmonton Oilers":'#FF4C00',"Chicago Blackhawks":'#CF0A2C',"Pittsburgh Penguins":'#D9A10F',"New York Yankees":'#3A5DAE',"Los Angeles Dodgers":'#2A7BD0',"St. Louis Cardinals":'#C41E3A',"Boston Red Sox":'#BD3039',"San Francisco Giants":'#FD5A1E',"Oakland Athletics":'#0F9D58',"Toronto Blue Jays":'#2a6fc9',"Toronto Raptors":'#CE1141'};
+})();
+FACEOFFS.forEach(f => { if (/^nhl-/.test(f[0])) f[0] = 'nhl'; else if (/^mlb-/.test(f[0])) f[0] = 'mlb'; else if (/^nba-\d|^nba-pre/.test(f[0])) f[0] = 'nba'; else if (f[0] === 'fr-tor') f[0] = 'nba'; });
+FACEOFFS.splice(1, 0, ['ath-all', 'Michael Jordan', 'Wayne Gretzky'], ['ath-all', 'Babe Ruth', 'LeBron James']);
+INFO['nba-teams'] += "|1976-77 Canadiens=60-8-12 · Stanley Cup|1984-85 Oilers=Stanley Cup · Gretzky, Messier, Kurri, Coffey|1955-56 Canadiens=Stanley Cup · First of 5 straight|2001-02 Red Wings=Stanley Cup · 9 future Hall of Famers|1927 Yankees=110-44 · World Series · Murderers' Row|1998 Yankees=114-48 · World Series|1975 Reds=108-54 · World Series · Big Red Machine|1939 Yankees=106-45 · World Series|2018 Red Sox=108-54 · World Series";
+INFO['fr-best'] = "Boston Celtics=NBA · *18 titles|Los Angeles Lakers=NBA · *17 titles|Golden State Warriors=NBA · *7 titles|Chicago Bulls=NBA · *6 titles|San Antonio Spurs=NBA · *5 titles|Miami Heat=NBA · *3 titles|New York Knicks=NBA · *3 titles|Philadelphia 76ers=NBA · *3 titles|Montreal Canadiens=NHL · *24 Stanley Cups|Toronto Maple Leafs=NHL · *13 Stanley Cups|Detroit Red Wings=NHL · *11 Stanley Cups|Boston Bruins=NHL · *6 Stanley Cups|Edmonton Oilers=NHL · *5 Stanley Cups|Chicago Blackhawks=NHL · *6 Stanley Cups|Pittsburgh Penguins=NHL · *5 Stanley Cups|New York Yankees=MLB · *27 World Series|Los Angeles Dodgers=MLB · *9 World Series|St. Louis Cardinals=MLB · *11 World Series|Boston Red Sox=MLB · *9 World Series|San Francisco Giants=MLB · *8 World Series|Oakland Athletics=MLB · *9 World Series|Toronto Blue Jays=MLB · *2 World Series|Toronto Raptors=NBA · *1 title";
+INFOMAP['nba-teams'] = {}; INFO['nba-teams'].split('|').forEach(r => { const i = r.indexOf('='); INFOMAP['nba-teams'][r.slice(0, i)] = r.slice(i + 1).split(' · '); });
+INFOMAP['fr-best'] = {}; INFO['fr-best'].split('|').forEach(r => { const i = r.indexOf('='); INFOMAP['fr-best'][r.slice(0, i)] = r.slice(i + 1).split(' · '); });
+(function patchTags() {
+  const P = {
+    nba: {era:"Tony Parker=2000s,2010s|Manu Ginobili=2000s,2010s|Carmelo Anthony=2000s,2010s|Pau Gasol=2000s,2010s|Chris Webber=90s,2000s|Blake Griffin=2010s|Chris Bosh=2000s,2010s|Rasheed Wallace=2000s|Dikembe Mutombo=90s",
+          pos:"Luka Doncic=PG|Alex English=SF|Adrian Dantley=SF|Bernard King=SF|Sidney Moncrief=SG|Penny Hardaway=PG|Paul George=SF|Donovan Mitchell=SG|Jalen Brunson=PG"},
+    nhl: {era:"Luc Robitaille=70s-80s,90s-2000s|Chris Chelios=70s-80s,90s-2000s|Scott Niedermayer=90s-2000s|Brian Leetch=90s-2000s|Al MacInnis=70s-80s,90s-2000s|Henrik Lundqvist=90s-2000s,2010s-now|Ed Belfour=90s-2000s|Marc-Andre Fleury=90s-2000s,2010s-now|Bernie Parent=70s-80s|Tony Esposito=70s-80s",
+          pos:"Auston Matthews=C|Howie Morenz=C|Red Kelly=D|Henri Richard=C|Milt Schmidt=C|Peter Stastny=C|Eric Lindros=C|Joe Thornton=C|Steven Stamkos=C"},
+    mlb: {era:"Ken Griffey Jr.=1960-99,2000s-now|Greg Maddux=1960-99,2000s-now|Joe Morgan=1960-99|Ozzie Smith=1960-99|Freddie Freeman=2000s-now|Chipper Jones=1960-99,2000s-now|Yogi Berra=Pre-1960|Ivan Rodriguez=1960-99,2000s-now|Mike Piazza=1960-99,2000s-now|Roy Campanella=Pre-1960|Carlton Fisk=1960-99|Gary Carter=1960-99|Buster Posey=2000s-now|Josh Gibson=Pre-1960|Yadier Molina=2000s-now|Edgar Martinez=1960-99,2000s-now|Joe Mauer=2000s-now|Mickey Cochrane=Pre-1960|Jorge Posada=1960-99,2000s-now",
+          pos:"Mel Ott=Outfield|Frank Robinson=Outfield|Reggie Jackson=Outfield"}
+  };
+  for (const sp in P) for (const kind of ['era','pos']) P[sp][kind].split('|').forEach(r => {
+    const [n, v] = r.split('='); const t = (TAGS[sp][n] ||= {era:[], pos:[]}); v.split(',').forEach(x => { if (!t[kind].includes(x)) t[kind].push(x); });
+  });
+})();
+
+// ---------- v5: merged sections ----------
+(function () {
+  const all = {}; CATS.forEach(c => c.subs.forEach(s => all[s.id] = s));
+  const catOf = id => CATS.find(c => c.id === id);
+  const union = (id, name, label, members, c) => {
+    const names = [], cmap = {}, tagOf = {}, info = {};
+    members.forEach(m => { const s = all[m]; s.items.split('|').forEach(n => { if (!cmap[n]) { names.push(n); cmap[n] = s.c || catOf(s.cat?.id)?.c; tagOf[n] = s.name; } }); Object.assign(info, INFOMAP[m] || {}); });
+    INFOMAP[id] = info;
+    return {id, name, label, c, items: names.join('|'), cmap, tagOf, pool:true};
+  };
+  // colours for members whose sub colour lives on the category
+  const fixC = (catId) => { const c = catOf(catId); c.subs.forEach(s => s.c = s.c || c.c); };
+  ['music','albums','movies','shows','food','drinks','games-cat','brands-cat','fashion','creators'].forEach(fixC);
+
+  const musicAll = union('music-all', 'All', 'All artists', ['rap','country','rnb','pop','rock'], '#8b6dff');
+  const albAll = union('alb-all', 'All', 'All albums', ['rap-albums','albums-all'], '#d4a017');
+  const movAll = union('mov-all', 'All', 'All movies', ['m-action','m-comedy','m-drama','m-horror','m-animated'], '#2a7bd0');
+  const showAll = union('show-all', 'All', 'All shows', ['s-drama','s-comedy','s-animated'], '#21b6a8');
+  all['albums-all'].name = 'Classics'; all['albums-all'].label = 'Classic albums';
+  all['rap-albums'].name = 'Rap';
+  ['m-action','m-comedy','m-drama','m-horror','m-animated'].forEach(id => all[id].label = all[id].name + ' movies');
+  ['s-drama','s-comedy','s-animated'].forEach(id => all[id].label = all[id].name + ' shows');
+  ['rap','country','rnb','pop','rock'].forEach(id => all[id].label = all[id].name + ' artists');
+  all['brands'].name = 'Clothing brands';
+
+  const sub = id => all[id];
+  const music = {id:'music', name:'Music', c:'#8b6dff', blurb:'Artists, albums and songs', subs:[musicAll, ...['rap','country','rnb','pop','rock'].map(sub), albAll, sub('rap-albums'), sub('albums-all'), sub('songs')]};
+  const screen = {id:'screen', name:'Movies and shows', c:'#2a7bd0', blurb:'Movies and TV by genre and era', subs:[movAll, ...['m-action','m-comedy','m-drama','m-horror','m-animated'].map(sub), showAll, ...['s-drama','s-comedy','s-animated'].map(sub)]};
+  const food = {id:'food', name:'Food and drinks', c:'#f08a24', blurb:'Fast food, snacks, sodas, coffee', subs:['fastfood','pizza','snacks','cuisines','sodas','energy','coffee'].map(sub)};
+  const brands = {id:'brands', name:'Brands', c:'#c0c0cc', blurb:'Fashion, sneakers and cars', subs:['streetwear','luxury','brands','sneakers','cars'].map(sub)};
+  const keep = id => catOf(id);
+  const hidden = CATS.filter(c => c.hidden);
+  CATS.splice(0, CATS.length, keep('sports'), music, screen, food, keep('games-cat'), brands, keep('creators'), ...hidden);
+
+  // side/tab layout for every category
+  window.NAVCFG = {
+    sports:{sides:[{id:'ath', label:'Athletes', tabs:['ath-all','nba','nhl','mlb']}, {id:'teams', label:'Teams', tabs:['nba-teams','fr-best']}]},
+    music:{sides:[{id:'artists', label:'Artists', tabs:['music-all','rap','country','rnb','pop','rock'], fg:'artists'}, {id:'albums', label:'Albums', tabs:['alb-all','rap-albums','albums-all'], fg:'albums'}, {id:'songs', label:'Songs', tabs:['songs'], fg:'songs'}]},
+    screen:{sides:[{id:'movies', label:'Movies', tabs:['mov-all','m-action','m-comedy','m-drama','m-horror','m-animated'], fg:'movies'}, {id:'shows', label:'Shows', tabs:['show-all','s-drama','s-comedy','s-animated'], fg:'shows'}]},
+    food:{sides:[{id:'food', label:'Food', tabs:['fastfood','pizza','snacks','cuisines']}, {id:'drinks', label:'Drinks', tabs:['sodas','energy','coffee']}]},
+    brands:{sides:[{id:'fashion', label:'Fashion', tabs:['streetwear','luxury','brands']}, {id:'sneakers', label:'Sneakers', tabs:['sneakers']}, {id:'cars', label:'Cars', tabs:['cars']}]},
+    'games-cat':{sides:[{id:'games', label:'Video games', tabs:['games']}]},
+    creators:{sides:[{id:'creators', label:'Creators', tabs:['youtubers','streamers','podcasts']}]}
+  };
+  // pooled rating groups + decade filter groups
+  window.POOLGROUPS = {artists:['music-all','rap','country','rnb','pop','rock'], albums:['alb-all','rap-albums','albums-all'], movies:['mov-all','m-action','m-comedy','m-drama','m-horror','m-animated'], shows:['show-all','s-drama','s-comedy','s-animated']};
+  const every = Object.assign({}, all, {'music-all':musicAll, 'alb-all':albAll, 'mov-all':movAll, 'show-all':showAll});
+  for (const k in NAVCFG) NAVCFG[k].sides.forEach(sd => { if (sd.fg) sd.tabs.forEach(t => every[t].fg = sd.fg); });
+  for (const g in POOLGROUPS) POOLGROUPS[g].forEach(t => every[t].grp = g);
+})();
+function decadeOf(subId, name) {
+  const p = (INFOMAP[subId] || {})[name]; if (!p) return '';
+  const m = p.join(' ').match(/(1[89]\d\d|20\d\d)/); if (!m) return '';
+  return Math.floor(+m[1] / 10) * 10 + 's';
+}
+FACEOFFS.forEach(f => { if (f[1] === 'Vince Carter' && f[2] === 'Kyle Lowry') { f[2] = 'Tracy McGrady'; } });
+FACEOFFS.push(['music-all','Drake','Johnny Cash'], ['show-all','Breaking Bad','The Office']);
+
+// ---------- v6 ----------
+window.CHIP = {};
+(function () {
+  const all = {}; CATS.forEach(c => c.subs.forEach(s => all[s.id] = s));
+  const catOf = id => CATS.find(c => c.id === id);
+  // no era filters in music / movies / shows
+  Object.values(all).forEach(s => { delete s.fg; });
+  // Sports team filters
+  const nhlT = ['1976-77 Canadiens','1984-85 Oilers','1955-56 Canadiens','2001-02 Red Wings'], mlbT = ['1927 Yankees','1998 Yankees','1975 Reds','1939 Yankees','2018 Red Sox'];
+  const tt = {}; all['nba-teams'].items.split('|').forEach(n => tt[n] = [nhlT.includes(n) ? 'NHL' : mlbT.includes(n) ? 'MLB' : 'NBA']);
+  CHIP['nba-teams'] = {label:'League', opts:['NBA','NHL','MLB'], tags:tt};
+  const ft = {}; all['fr-best'].items.split('|').forEach(n => ft[n] = [INFOMAP['fr-best'][n][0]]);
+  CHIP['fr-best'] = {label:'League', opts:['NBA','NHL','MLB'], tags:ft};
+  // Food: taste chips, pizza out
+  const sweetFF = ['Dairy Queen','Tim Hortons'];
+  const ff = {}; all['fastfood'].items.split('|').forEach(n => ff[n] = [sweetFF.includes(n) ? 'Sweet' : 'Savoury']);
+  CHIP['fastfood'] = {label:'Taste', opts:['Sweet','Savoury'], tags:ff};
+  const salty = ['Doritos Cool Ranch','Doritos Nacho Cheese',"Lay's Classic",'Ruffles All Dressed','Cheetos','Pringles','Takis','Goldfish','Cheez-It','Ketchup chips','Hickory Sticks'];
+  const sn = {}; all['snacks'].items.split('|').forEach(n => sn[n] = [salty.includes(n) ? 'Salty' : 'Sweet']);
+  CHIP['snacks'] = {label:'Taste', opts:['Sweet','Salty'], tags:sn};
+  // Games: platform chips
+  const P = 'PlayStation', X = 'Xbox', N = 'Nintendo', C = 'PC';
+  const plat = {"The Legend of Zelda: Breath of the Wild":[N],"Super Mario 64":[N],"Minecraft":[P,X,N,C],"Grand Theft Auto V":[P,X,C],"Red Dead Redemption 2":[P,X,C],"The Last of Us":[P,C],"The Witcher 3":[P,X,N,C],"Elden Ring":[P,X,C],"Skyrim":[P,X,N,C],"Fortnite":[P,X,N,C],"Call of Duty 4: Modern Warfare":[P,X,C],"Halo 3":[X,C],"God of War (2018)":[P,C],"Super Smash Bros. Melee":[N],"Pokemon Red and Blue":[N],"Tetris":[P,X,N,C],"Portal 2":[P,X,N,C],"Mass Effect 2":[P,X,C],"NBA 2K11":[P,X,N,C],"Rocket League":[P,X,N,C],"Grand Theft Auto: San Andreas":[P,X,C],"Mario Kart 8":[N],"Ocarina of Time":[N],"Wii Sports":[N]};
+  CHIP['games'] = {label:'Platform', opts:[P,X,N,C], tags:plat};
+
+  // Brands: one fashion brands list, sneakers, cars brands + models
+  const names = [], cmap = {}, tagOf = {};
+  ['brands','streetwear','luxury'].forEach(m => all[m].items.split('|').forEach(n => { if (!cmap[n]) { names.push(n); cmap[n] = all[m].c; tagOf[n] = m === 'brands' ? 'Clothing' : m === 'luxury' ? 'Luxury' : 'Streetwear'; } }));
+  const fashBrands = {id:'fash-brands', name:'Brands', label:'Fashion brands', c:'#e056b5', items:names.join('|'), cmap, tagOf, grp:'fashion'};
+  ['brands','streetwear','luxury'].forEach(m => all[m].grp = 'fashion');
+  POOLGROUPS.fashion = ['fash-brands','brands','streetwear','luxury'];
+  all['cars'].name = 'Brands'; all['cars'].label = 'Car brands';
+  const CM = {Porsche:'#c9a227',Toyota:'#e5484d',Nissan:'#c0c0cc',Lamborghini:'#d9a10f',Ferrari:'#e5484d',McLaren:'#f08a24',Ford:'#2a6fc9',Chevrolet:'#d4a017',Dodge:'#b3261e',BMW:'#2a7bd0',Mercedes:'#8a8d8f',Honda:'#e5484d',Subaru:'#2e5baa',Mazda:'#9b1c1c',Tesla:'#e5484d',Land:'#3ea55b',Jeep:'#5c7a3a',Bugatti:'#2a6fc9',Audi:'#8a8d8f',Rolls:'#6b5fa0',Mitsubishi:'#e5484d'};
+  const models = "Porsche 911|Toyota Supra|Nissan GT-R|Lamborghini Aventador|Ferrari F40|McLaren F1|Ford Mustang|Chevrolet Corvette|Dodge Challenger|BMW M3|Mercedes-AMG G63|Honda Civic Type R|Subaru WRX STI|Mazda Miata|Tesla Model S|Land Rover Range Rover|Jeep Wrangler|Bugatti Chiron|Lamborghini Countach|Audi R8|Rolls-Royce Phantom|Ford GT|Toyota Land Cruiser|Mitsubishi Lancer Evolution";
+  const mc = {}; models.split('|').forEach(n => { const k = Object.keys(CM).find(b => n.startsWith(b)); mc[n] = k ? CM[k] : '#c0c0cc'; });
+  const carModels = {id:'car-models', name:'Models', label:'Car models', c:'#c0c0cc', items:models, cmap:mc};
+
+  // Celebrities: all + actors, comedians, influencers, looks
+  const actors = {id:'actors', name:'Actors', label:'Actors', c:'#d4a017', items:"Leonardo DiCaprio|Denzel Washington|Tom Hanks|Meryl Streep|Will Smith|Dwayne Johnson|Brad Pitt|Robert De Niro|Al Pacino|Morgan Freeman|Tom Cruise|Margot Robbie|Scarlett Johansson|Zendaya|Keanu Reeves|Ryan Reynolds|Ryan Gosling|Cillian Murphy|Timothee Chalamet|Viola Davis|Samuel L. Jackson|Jack Nicholson"};
+  const comedians = {id:'comedians', name:'Comedians', label:'Comedians', c:'#e5b021', items:"Dave Chappelle|Kevin Hart|Eddie Murphy|Richard Pryor|George Carlin|Robin Williams|Chris Rock|Jerry Seinfeld|Bill Burr|John Mulaney|Adam Sandler|Jim Carrey|Will Ferrell|Steve Martin|Bernie Mac|Ali Wong|Matt Rife|Shane Gillis|Nate Bargatze|Sebastian Maniscalco"};
+  const influencers = {id:'influencers', name:'Influencers', label:'Influencers', c:'#e056b5', items:"Kim Kardashian|Kylie Jenner|Khaby Lame|Charli D'Amelio|Addison Rae|Bella Poarch|Alix Earle|Emma Chamberlain|Dixie D'Amelio|Zach King|Brent Rivera|Bretman Rock|Huda Kattan|James Charles|Livvy Dunne|Bryce Hall"};
+  const lookM = {id:'looks-men', name:'Men', label:'Best-looking men', c:'#2a7bd0', items:"Brad Pitt|Leonardo DiCaprio|Henry Cavill|Chris Hemsworth|Ryan Gosling|Michael B. Jordan|Idris Elba|Zayn Malik|Harry Styles|Timothee Chalamet|Jacob Elordi|Jason Momoa|Chris Evans|Ryan Reynolds|Tom Hardy|David Beckham|Cristiano Ronaldo|Shawn Mendes|Paul Mescal|Pedro Pascal"};
+  const lookW = {id:'looks-women', name:'Women', label:'Best-looking women', c:'#e056b5', items:"Margot Robbie|Zendaya|Beyonce|Rihanna|Angelina Jolie|Scarlett Johansson|Megan Fox|Kendall Jenner|Bella Hadid|Gigi Hadid|Sydney Sweeney|Ana de Armas|Gal Gadot|Jennifer Lopez|Halle Berry|Dua Lipa|Selena Gomez|Taylor Swift|Kim Kardashian|Hailey Bieber"};
+  const cel = [all['youtubers'], all['streamers'], all['podcasts'], actors, comedians, influencers];
+  const cn = [], ccm = {}, ctag = {};
+  cel.forEach(s => s.items.split('|').forEach(n => { if (!ccm[n]) { cn.push(n); ccm[n] = s.c; ctag[n] = s.name.replace(/s$/, ''); } }));
+  const celebAll = {id:'celeb-all', name:'All', label:'All celebrities', c:'#ff4d4d', items:cn.join('|'), cmap:ccm, tagOf:ctag, grp:'celebs'};
+  POOLGROUPS.celebs = ['celeb-all', ...cel.map(s => s.id)];
+  cel.forEach(s => s.grp = 'celebs');
+
+  const brandsCat = catOf('brands'), creators = catOf('creators'), food = catOf('food');
+  const legacy = {id:'legacy2', name:'Legacy', hidden:true, subs:[all['streetwear'], all['luxury'], all['brands'], all['pizza']]};
+  brandsCat.subs = [fashBrands, all['sneakers'], all['cars'], carModels];
+  brandsCat.blurb = 'Fashion brands, sneakers, cars';
+  food.subs = food.subs.filter(s => s.id !== 'pizza'); food.blurb = 'Fast food, snacks, cuisines, drinks';
+  creators.name = 'Celebrities'; creators.blurb = 'Actors, comedians, creators, influencers, looks';
+  creators.subs = [celebAll, ...cel, lookM, lookW];
+  CATS.push(legacy);
+  NAVCFG.food.sides[0].tabs = ['fastfood','snacks','cuisines'];
+  NAVCFG.brands = {sides:[{id:'fashion', label:'Fashion', tabs:['fash-brands','sneakers']}, {id:'cars', label:'Cars', tabs:['cars','car-models']}]};
+  NAVCFG.creators = {sides:[{id:'famous', label:'Famous people', tabs:['celeb-all','actors','comedians','youtubers','streamers','podcasts','influencers']}, {id:'looks', label:'Looks', tabs:['looks-men','looks-women']}]};
+  NAVCFG['games-cat'].sides[0].label = 'Video games';
+})();
+FACEOFFS.splice(0, FACEOFFS.length, ...FACEOFFS.filter(f => f[0] !== 'pizza' && f[0] !== 'luxury'));
+FACEOFFS.push(['car-models','Porsche 911','Toyota Supra'], ['comedians','Dave Chappelle','Kevin Hart']);
+
+// ---------- v7: NFL + soccer ----------
+ACC_LABEL.nfl = {S:['Super Bowl','SB'], F:['Super Bowl MVP','SB MVP'], M:['MVP','MVP'], D:['DPOY','DPOY']};
+ACC_LABEL.soc = {B:["Ballon d'Or","Ballon d'Or"], W:['World Cup','World Cup'], C:['Champions League','UCL']};
+window.LGNAME = {nba:'NBA', nhl:'NHL', mlb:'MLB', nfl:'NFL', soc:'Soccer'};
+const ACC_NFL = "Tom Brady:S7,F5,M3|Peyton Manning:S2,F1,M5,h|Joe Montana:S4,F3,M2,h|Patrick Mahomes:S3,F3,M2|Aaron Rodgers:S1,F1,M4|Johnny Unitas:S1,M3,h|Dan Marino:M1,h|John Elway:S2,F1,M1,h|Brett Favre:S1,M3,h|Drew Brees:S1,F1,h|Otto Graham:h|Steve Young:S1,F1,M2,h|Josh Allen:M1|Lamar Jackson:M2|Jim Brown:M2,h|Walter Payton:S1,M1,h|Barry Sanders:M1,h|Emmitt Smith:S3,F1,M1,h|LaDainian Tomlinson:M1,h|Adrian Peterson:M1|Eric Dickerson:h|Marshall Faulk:S1,M1,h|Saquon Barkley:S1|Jerry Rice:S3,F1,h|Randy Moss:h|Larry Fitzgerald:h|Calvin Johnson:h|Terrell Owens:h|Don Hutson:h|Justin Jefferson:|Travis Kelce:S3|Rob Gronkowski:S4|Tony Gonzalez:h|Lawrence Taylor:S2,M1,D3,h|Reggie White:S1,D2,h|Ray Lewis:S2,F1,D2,h|Deion Sanders:S2,D1,h|Dick Butkus:h|Aaron Donald:S1,D3|J.J. Watt:D3|Ronnie Lott:S4,h|Ed Reed:S1,D1,h|Bruce Smith:D2,h|Joe Greene:S4,D2,h|Deacon Jones:h";
+const ACC_SOC = "Lionel Messi:B8,W1,C4|Cristiano Ronaldo:B5,C5|Pele:W3|Diego Maradona:W1|Johan Cruyff:B3,C3|Zinedine Zidane:B1,W1,C1|Ronaldo Nazario:B2,W2|Franz Beckenbauer:B2,W1,C3|Alfredo Di Stefano:B2,C5|Ronaldinho:B1,W1,C1|Thierry Henry:W1,C1|Kylian Mbappe:W1|Erling Haaland:C1|Kaka:B1,W1,C1|Xavi:W1,C4|Andres Iniesta:W1,C4|Paolo Maldini:C5|Luka Modric:B1,C6|Robert Lewandowski:C1|Mohamed Salah:C1|Zlatan Ibrahimovic:|Wayne Rooney:C1|George Best:B1,C1|Gerd Muller:B1,W1,C3|Eusebio:B1,C1|Lev Yashin:B1|Gianluigi Buffon:W1|Sergio Ramos:W1,C4|Virgil van Dijk:C1|Kevin De Bruyne:C1|Franco Baresi:W1,C3|Fabio Cannavaro:B1,W1|Roberto Carlos:W1,C3|Cafu:W2,C1|Philipp Lahm:W1,C1|Carles Puyol:W1,C3|Manuel Neuer:W1,C2|Iker Casillas:W1,C3|Gordon Banks:W1|Peter Schmeichel:C1|Lothar Matthaus:B1,W1|Andrea Pirlo:W1,C2|Steven Gerrard:C1|Frank Lampard:C1|Paul Scholes:C1";
+[['nfl',ACC_NFL],['soc',ACC_SOC]].forEach(([lg, str]) => str.split('|').forEach(row => {
+  const i = row.indexOf(':'); const name = row.slice(0, i); const o = {lg, hof:false, v:{}};
+  row.slice(i + 1).split(',').filter(Boolean).forEach(t => { if (t === 'h') o.hof = true; else o.v[t[0]] = +t.slice(1); });
+  ACC[name] = o;
+}));
+(function () {
+  const E1 = 'Pre-1980', E2 = '1980s-90s', E3 = '2000s-10s', E4 = '2020s';
+  const NFL = "Tom Brady=QB=3,4|Peyton Manning=QB=2,3|Joe Montana=QB=2|Patrick Mahomes=QB=3,4|Aaron Rodgers=QB=3,4|Johnny Unitas=QB=1|Dan Marino=QB=2|John Elway=QB=2|Brett Favre=QB=2,3|Drew Brees=QB=3|Otto Graham=QB=1|Steve Young=QB=2|Josh Allen=QB=3,4|Lamar Jackson=QB=3,4|Jim Brown=RB=1|Walter Payton=RB=1,2|Barry Sanders=RB=2|Emmitt Smith=RB=2,3|LaDainian Tomlinson=RB=3|Adrian Peterson=RB=3|Eric Dickerson=RB=2|Marshall Faulk=RB=2,3|Saquon Barkley=RB=3,4|Jerry Rice=WR and TE=2,3|Randy Moss=WR and TE=2,3|Larry Fitzgerald=WR and TE=3|Calvin Johnson=WR and TE=3|Terrell Owens=WR and TE=2,3|Don Hutson=WR and TE=1|Justin Jefferson=WR and TE=4|Travis Kelce=WR and TE=3,4|Rob Gronkowski=WR and TE=3|Tony Gonzalez=WR and TE=2,3|Lawrence Taylor=Defense=2|Reggie White=Defense=2|Ray Lewis=Defense=2,3|Deion Sanders=Defense=2|Dick Butkus=Defense=1|Aaron Donald=Defense=3,4|J.J. Watt=Defense=3|Ronnie Lott=Defense=2|Ed Reed=Defense=3|Bruce Smith=Defense=2|Joe Greene=Defense=1|Deacon Jones=Defense=1";
+  const SOC = "Lionel Messi=Forwards=3,4|Cristiano Ronaldo=Forwards=3,4|Pele=Forwards=1|Diego Maradona=Forwards=2|Johan Cruyff=Forwards=1|Zinedine Zidane=Midfielders=2,3|Ronaldo Nazario=Forwards=2,3|Franz Beckenbauer=Defenders=1|Alfredo Di Stefano=Forwards=1|Ronaldinho=Forwards=3|Thierry Henry=Forwards=2,3|Kylian Mbappe=Forwards=3,4|Erling Haaland=Forwards=4|Kaka=Midfielders=3|Xavi=Midfielders=3|Andres Iniesta=Midfielders=3|Paolo Maldini=Defenders=2,3|Luka Modric=Midfielders=3,4|Robert Lewandowski=Forwards=3,4|Mohamed Salah=Forwards=3,4|Zlatan Ibrahimovic=Forwards=3|Wayne Rooney=Forwards=3|George Best=Forwards=1|Gerd Muller=Forwards=1|Eusebio=Forwards=1|Lev Yashin=Goalkeepers=1|Gianluigi Buffon=Goalkeepers=2,3|Sergio Ramos=Defenders=3|Virgil van Dijk=Defenders=3,4|Kevin De Bruyne=Midfielders=3,4|Franco Baresi=Defenders=2|Fabio Cannavaro=Defenders=2,3|Roberto Carlos=Defenders=2,3|Cafu=Defenders=2,3|Philipp Lahm=Defenders=3|Carles Puyol=Defenders=3|Manuel Neuer=Goalkeepers=3,4|Iker Casillas=Goalkeepers=3|Gordon Banks=Goalkeepers=1|Peter Schmeichel=Goalkeepers=2|Lothar Matthaus=Midfielders=2|Andrea Pirlo=Midfielders=3|Steven Gerrard=Midfielders=3|Frank Lampard=Midfielders=3|Paul Scholes=Midfielders=2,3";
+  const ER = {1:E1, 2:E2, 3:E3, 4:E4};
+  const build = (sp, str, posOrder, c, label) => {
+    TAGS[sp] = {}; FILTERS[sp] = {era:[E1, E2, E3, E4], pos:posOrder}; const names = [];
+    str.split('|').forEach(r => { const [n, p, e] = r.split('='); names.push(n); TAGS[sp][n] = {pos:[p], era:e.split(',').map(x => ER[x])}; });
+    return {id:sp, name:label, g:'Athletes', label, ath:sp, c, items:names.join('|')};
+  };
+  const nfl = build('nfl', NFL, ['QB','RB','WR and TE','Defense'], '#3b6fd8', 'NFL');
+  const soc = build('soc', SOC, ['Forwards','Midfielders','Defenders','Goalkeepers'], '#16a34a', 'Soccer');
+  const sports = CATS.find(c => c.id === 'sports');
+  sports.subs.splice(2, 0, nfl); sports.subs.splice(5, 0, soc);
+  sports.blurb = 'NBA, NFL, NHL, MLB and soccer legends, plus the greatest teams';
+  const all = sports.subs.find(s => s.id === 'ath-all');
+  all.items += "|Tom Brady|Peyton Manning|Joe Montana|Patrick Mahomes|Aaron Rodgers|Johnny Unitas|Dan Marino|John Elway|Jim Brown|Walter Payton|Barry Sanders|Emmitt Smith|Jerry Rice|Randy Moss|Lawrence Taylor|Reggie White|Ray Lewis|Deion Sanders|Aaron Donald|Rob Gronkowski" +
+    "|Lionel Messi|Cristiano Ronaldo|Pele|Diego Maradona|Johan Cruyff|Zinedine Zidane|Ronaldo Nazario|Franz Beckenbauer|Alfredo Di Stefano|Ronaldinho|Thierry Henry|Kylian Mbappe|Erling Haaland|Xavi|Andres Iniesta|Paolo Maldini|Luka Modric|Robert Lewandowski|Gerd Muller|Lev Yashin";
+  all.cmap = {}; all.items.split('|').forEach(n => { const a = ACC[n]; if (a && (a.lg === 'nfl' || a.lg === 'soc')) all.cmap[n] = a.lg === 'nfl' ? '#3b6fd8' : '#16a34a'; });
+  NAVCFG.sports.sides[0].tabs = ['ath-all','nba','nfl','nhl','mlb','soc'];
+})();
+FACEOFFS.splice(3, 0, ['soc','Lionel Messi','Cristiano Ronaldo'], ['nfl','Tom Brady','Joe Montana'], ['ath-all','Tom Brady','Michael Jordan']);
+
+// ---------- v10: Looks removed ----------
+(function () {
+  const cel = CATS.find(c => c.id === 'creators');
+  const looks = cel.subs.filter(s => /^looks-/.test(s.id));
+  cel.subs = cel.subs.filter(s => !/^looks-/.test(s.id));
+  cel.blurb = 'Actors, comedians, YouTubers, streamers, podcasts, influencers';
+  const legacy = CATS.find(c => c.id === 'legacy2'); legacy.subs.push(...looks);
+  NAVCFG.creators = {sides:[{id:'famous', label:'Famous people', tabs:['celeb-all','actors','comedians','youtubers','streamers','podcasts','influencers']}]};
+})();
+
+// ---------- v11: Music = artists only, bigger artist lists ----------
+(function () {
+  const music = CATS.find(c => c.id === 'music');
+  const legacy = CATS.find(c => c.id === 'legacy2');
+  const byId = id => music.subs.find(s => s.id === id);
+  const MORE = {
+    rap: "LL Cool J|Public Enemy|N.W.A|Eazy-E|KRS-One|Slick Rick|Big Daddy Kane|De La Soul|Queen Latifah|Lil' Kim|Big Pun|Big L|Mobb Deep|Busta Rhymes|Method Man|Ghostface Killah|Scarface|UGK|Bone Thugs-N-Harmony|Three 6 Mafia|Juvenile|Common|Mos Def|T.I.|Ludacris|Nelly|Gucci Mane|Jeezy|Rick Ross|Clipse|Pusha T|Lupe Fiasco|Kid Cudi|Big Sean|Meek Mill|Nipsey Hussle|ScHoolboy Q|A$AP Rocky|Childish Gambino|Young Thug|21 Savage|Lil Uzi Vert|Playboi Carti|Juice WRLD|XXXTentacion|Pop Smoke|Lil Durk|Chief Keef|NBA YoungBoy|Gunna|Cardi B|Megan Thee Stallion|Roddy Ricch|Jack Harlow|J.I.D|Denzel Curry|Freddie Gibbs|GloRilla|Doechii",
+    country: "George Jones|Tammy Wynette|Conway Twitty|Charley Pride|Glen Campbell|Buck Owens|Emmylou Harris|Kris Kristofferson|John Denver|Randy Travis|Alabama|Vince Gill|Dwight Yoakam|Travis Tritt|Clint Black|Brooks & Dunn|Faith Hill|Martina McBride|Trisha Yearwood|The Chicks|Rascal Flatts|Blake Shelton|Luke Bryan|Jason Aldean|Miranda Lambert|Eric Church|Dierks Bentley|Darius Rucker|Florida Georgia Line|Sam Hunt|Thomas Rhett|Kane Brown|Dan + Shay|Kacey Musgraves|Sturgill Simpson|Tyler Childers|Jason Isbell|Cody Johnson|Lainey Wilson|Jelly Roll|Riley Green|Bailey Zimmerman|Megan Moroney|Ella Langley|Shaboozey",
+    rnb: "Smokey Robinson|The Temptations|Diana Ross|Curtis Mayfield|Bill Withers|Donny Hathaway|Barry White|Teddy Pendergrass|Earth, Wind & Fire|The Isley Brothers|Chaka Khan|Lionel Richie|Anita Baker|Sade|Bobby Brown|New Edition|Babyface|Toni Braxton|Keith Sweat|Jodeci|Brian McKnight|Ginuwine|Maxwell|Jill Scott|Musiq Soulchild|Destiny's Child|Monica|Ciara|Ashanti|Ne-Yo|Chris Brown|Keyshia Cole|Trey Songz|Miguel|Jhene Aiko|Bryson Tiller|PartyNextDoor|Khalid|H.E.R.|Kehlani|Summer Walker|Jazmine Sullivan|Giveon|Lucky Daye|Anderson .Paak|Victoria Monet|Tems|Leon Thomas",
+    pop: "Cher|Cyndi Lauper|Billy Joel|Christina Aguilera|Backstreet Boys|NSYNC|Spice Girls|Kelly Clarkson|P!nk|Gwen Stefani|Avril Lavigne|Nelly Furtado|Shakira|Jennifer Lopez|Ricky Martin|Enrique Iglesias|Black Eyed Peas|Pitbull|Maroon 5|OneRepublic|Michael Buble|Miley Cyrus|Selena Gomez|Demi Lovato|Jonas Brothers|One Direction|Sam Smith|Lorde|Sia|Meghan Trainor|Carly Rae Jepsen|Halsey|Camila Cabello|Lizzo|Doja Cat|Post Malone|Lewis Capaldi|Charli XCX|Chappell Roan|Tate McRae|Gracie Abrams|Benson Boone|Bad Bunny|BTS|BLACKPINK",
+    rock: "Chuck Berry|Little Richard|The Beach Boys|The Kinks|Bob Dylan|The Velvet Underground|Creedence Clearwater Revival|Eric Clapton|Santana|Neil Young|Deep Purple|Lynyrd Skynyrd|The Allman Brothers Band|Rush|Kiss|Van Halen|Journey|Boston|Genesis|Tom Petty and the Heartbreakers|Dire Straits|Def Leppard|Ramones|Sex Pistols|The Clash|The Police|Talking Heads|The Cure|R.E.M.|Pearl Jam|Soundgarden|Alice in Chains|Green Day|The Smashing Pumpkins|Rage Against the Machine|Blink-182|Weezer|System of a Down|Tool|The Strokes|The White Stripes|The Killers|Arctic Monkeys|Coldplay|Muse|Kings of Leon|The Black Keys|My Chemical Romance|Fall Out Boy|Paramore|Imagine Dragons|Tame Impala"
+  };
+  const all = byId('music-all');
+  const seen = new Set(all.items.split('|'));
+  for (const id in MORE) {
+    const s = byId(id); const have = new Set(s.items.split('|'));
+    const add = MORE[id].split('|').filter(n => !have.has(n));
+    s.items += '|' + add.join('|');
+    add.forEach(n => { if (!seen.has(n)) { seen.add(n); all.items += '|' + n; all.cmap[n] = s.c; all.tagOf[n] = s.name; } });
+  }
+  // Albums and songs retired (kept hidden so old votes stay valid)
+  const gone = ['alb-all', 'rap-albums', 'albums-all', 'songs'];
+  legacy.subs.push(...music.subs.filter(s => gone.includes(s.id)));
+  music.subs = music.subs.filter(s => !gone.includes(s.id));
+  music.blurb = 'Rap, R&B, pop, rock and country artists';
+  NAVCFG.music = {sides:[{id:'artists', label:'Artists', tabs:['music-all','rap','country','rnb','pop','rock']}]};
+  delete POOLGROUPS.albums;
+  const keep = FACEOFFS.filter(f => !gone.includes(f[0]));
+  FACEOFFS.splice(0, FACEOFFS.length, ...keep);
+})();
+const slug = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'x';
+const SUBS = {};
+CATS.forEach(c => c.subs.forEach(s => {
+  s.cat = c; s.c = s.c || c.c; s.label = s.label || s.name;
+  s.list = []; s.byId = {};
+  s.items.split('|').forEach(n => addItem(s, n));
+  SUBS[s.id] = s;
+}));
+const ATH_SUBS = new Set([...CATS.find(c => c.id === 'athletes').subs.map(x => x.id), ...Object.keys(SUBS).filter(id => SUBS[id].ath)]);
+const isAth = id => !!(SUBS[id] && SUBS[id].ath);
+const GSET = {}; for (const g in POOLGROUPS) GSET[g] = new Set(POOLGROUPS[g]);
+const srcSet = id => { const x = SUBS[id]; return !x ? null : x.ath ? ATH_SUBS : x.grp ? GSET[x.grp] : null; };
+const sportOfName = n => ACC[n] ? ACC[n].lg : null;
+function addItem(s, name, extra) {
+  const id = slug(name);
+  if (s.byId[id]) return false;
+  const team = s.fr ? null : TEAMOF[name];
+  const it = {id, name, team, c: (s.cmap && s.cmap[name]) ? s.cmap[name] : s.id === 'fr-best' ? (FR_COLORS[name] || s.c) : s.fr ? s.c : team ? TEAMC[team] : s.c, extra: !!extra};
+  s.list.push(it); s.byId[id] = it; return true;
+}
+const pairKey = (sub, a, b) => a < b ? `${sub}:${a}:${b}` : `${sub}:${b}:${a}`;
+const initials = n => { const w = n.replace(/^The /,'').split(/[\s\-:]+/).filter(x => /[A-Za-z0-9]/.test(x[0]||'')); return (w.length === 1 ? w[0].slice(0,2) : w.slice(0,2).map(x => x[0]).join('')).toUpperCase() || n[0]; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
+const VIEWS = ['home','vote','rank','build','cmp','me','admin'];
+
+const S = {
+  cat:'sports', sub:'ath-all', view:'home', rankMode:'global',
+  mine:{}, others:{}, byUser:{}, voters:0,
+  pair:null, forced:null, last:null, locked:false, session:0, advTimer:null,
+  db:null, user:null, uid:null, owner:false, mode:'loading', readOnly:false,
+  extras:{items:{}, decided:{}}, mySugg:[], allSugg:[], cmpWith:null, names:{}, showSuggest:false,
+  prog:{xp:0, days:[], ht:0, best:0, b:{}, bd:[]}, bq:'', vt:{}, othersVT:[], lockedSubs:new Set()
+};
+try { const sv = JSON.parse(localStorage.getItem('top10.nav')||'null'); if (sv && SUBS[sv.sub] && !SUBS[sv.sub].cat.hidden) { S.cat = SUBS[sv.sub].cat.id; S.sub = sv.sub; } } catch(e) {}
+
+function standings(subId, mode, votesOf) {
+  const sub = SUBS[subId];
+  const ids = sub.list.map(x => x.id), idx = Object.fromEntries(ids.map((id, i) => [id, i]));
+  const n = ids.length, W = new Array(n).fill(0), G = new Array(n).fill(0), pairs = new Map();
+  const add = (a, b, winner, c) => {
+    if (!(a in idx) || !(b in idx) || !(winner in idx) || c <= 0) return;
+    const wi = idx[winner], li = idx[winner === a ? b : a];
+    W[wi] += c; G[wi] += c; G[li] += c;
+    const k = wi < li ? wi + ',' + li : li + ',' + wi; pairs.set(k, (pairs.get(k) || 0) + c);
+  };
+  const ss = srcSet(subId), srcOk = ss ? (s2 => ss.has(s2)) : (s2 => s2 === subId);
+  const addSrc = src => { for (const key in src) { const [s2, a, b] = key.split(':'); if (srcOk(s2)) add(a, b, src[key], 1); } };
+  if (votesOf) addSrc(votesOf);
+  else {
+    if (mode !== 'mine') for (const key in S.others) { const [s2, a, b] = key.split(':'); if (!srcOk(s2)) continue; for (const w in S.others[key]) add(a, b, w, S.others[key][w]); }
+    addSrc(S.mine);
+  }
+  let p = new Array(n).fill(1);
+  const plist = [...pairs].map(([k, c]) => { const [i, j] = k.split(',').map(Number); return [i, j, c]; });
+  for (let it = 0; it < 60; it++) {
+    const den = new Array(n).fill(0);
+    plist.forEach(([i, j, c]) => { const t = c / (p[i] + p[j]); den[i] += t; den[j] += t; });
+    const np = p.map((pi, i) => (W[i] + 1) / (den[i] + 2 / (pi + 1)));
+    const g = Math.exp(np.reduce((a, v) => a + Math.log(v), 0) / n);
+    p = np.map(v => v / g);
+  }
+  return sub.list.map((x, i) => ({...x, w:W[i], g:G[i], elo: Math.round(1500 + 400 * Math.log10(p[i])), seed:i}))
+    .sort((a, b) => b.elo - a.elo || b.g - a.g || a.seed - b.seed);
+}
+function splitFor(key) {
+  const [sid, a, b] = key.split(':');
+  const keys = srcSet(sid) ? [...srcSet(sid)].map(x => pairKey(x, a, b)) : [key];
+  let ca = 0, cb = 0;
+  keys.forEach(k => { const o = S.others[k] || {}; ca += o[a] || 0; cb += o[b] || 0; });
+  const mv = myVoteOn(sid, a, b);
+  if (mv === a) ca++; else if (mv === b) cb++;
+  return {a, b, ca, cb};
+}
+function myVoteOn(sid, a, b) {
+  const ss = srcSet(sid);
+  if (!ss) return S.mine[pairKey(sid, a, b)];
+  const own = S.mine[pairKey(sid, a, b)]; if (own) return own;
+  for (const x of ss) { const v = S.mine[pairKey(x, a, b)]; if (v) return v; }
+  return undefined;
+}
+// ---- athlete filters
+S.filt = {nfl:{era:'', pos:''}, soc:{era:'', pos:''}, nba:{era:'', pos:''}, nhl:{era:'', pos:''}, mlb:{era:'', pos:''}, artists:{era:''}, albums:{era:''}, songs:{era:''}, movies:{era:''}, shows:{era:''}};
+try { const f = JSON.parse(localStorage.getItem('top10.filt') || 'null'); if (f) for (const k in S.filt) if (f[k]) S.filt[k] = {era: f[k].era || '', pos: f[k].pos || ''}; } catch (e) {}
+S.chip = {};
+function chipOk(subId, item) { const ch = CHIP[subId], v = S.chip[subId]; return !ch || !v || (ch.tags[item.name] || []).includes(v); }
+function inFilter(subId, item) {
+  if (!chipOk(subId, item)) return false;
+  const fg = SUBS[subId].fg; if (fg) { const e = S.filt[fg].era; return !e || decadeOf(subId, item.name) === e; }
+  const sp = SUBS[subId].ath; if (!sp || sp === 'all') return true;
+  const f = S.filt[sp], t = TAGS[sp][item.name] || {era:[], pos:[]};
+  return (!f.era || t.era.includes(f.era)) && (!f.pos || t.pos.includes(f.pos));
+}
+function filterLabel(subId) { return [filterLabel0(subId), S.chip[subId]].filter(Boolean).join(' · '); }
+function filterLabel0(subId) {
+  const fg = SUBS[subId].fg; if (fg) return [SUBS[subId].label, S.filt[fg].era].filter(Boolean).join(' · ');
+  const sp = SUBS[subId].ath; if (!sp || sp === 'all') return SUBS[subId].label;
+  const f = S.filt[sp]; return [SUBS[subId].label, f.era, f.pos].filter(Boolean).join(' · ');
+}
+const viewOrder = (subId, mode, votesOf) => standings(subId, mode, votesOf).filter(x => inFilter(subId, x));
+
+// ---------- Find my top 10 ----------
+function myPairsFor(subId) {
+  const ss = srcSet(subId) || new Set([subId]), set = new Set();
+  for (const k in S.mine) { const [s2, a, b] = k.split(':'); if (ss.has(s2)) set.add(a < b ? a + '|' + b : b + '|' + a); }
+  return set;
+}
+const ACCW = {r:3, f:3, m:4, d:1, a:0.3, c:3, H:4, R:1, S:2, N:2, V:2, w:3, M:4, Y:3, F:2, D:1, B:5, W:4, C:2};
+const priorCache = {};
+function prior(subId, item) {
+  const ck = subId + '|' + item.id; if (priorCache[ck] != null) return priorCache[ck];
+  const a = ACC[item.name]; let v = 0;
+  if (a) { for (const k in a.v) v += (ACCW[k] || 1) * a.v[k]; if (a.hof) v += 3; }
+  const seed = SUBS[subId].list.indexOf(item);
+  return priorCache[ck] = v - seed * 0.01;
+}
+const contKey = () => bKey0();
+const contOf = subId => { const c = S.prog.cont && S.prog.cont[subId === S.sub ? contKey() : subId]; return Array.isArray(c) ? c : null; };
+function finder(subId, opts) {
+  opts = opts || {};
+  const ss = srcSet(subId) || new Set([subId]);
+  let bt0 = viewOrder(subId, null, S.mine);
+  const cont = !opts.all && contOf(subId);
+  if (cont && !cont.includes('*')) { const cs = new Set(cont); bt0 = bt0.filter(x => cs.has(x.id)); }
+  bt0.sort((a, b) => b.elo - a.elo || prior(subId, b) - prior(subId, a));
+  const bt = bt0, n = bt.length, idx = {}; bt.forEach((x, i) => idx[x.id] = i);
+  const beats = bt.map(() => []), direct = new Set(), games = {}; bt.forEach(x => games[x.id] = 0);
+  for (const k in S.mine) { const [s2, a, b] = k.split(':'); if (!ss.has(s2) || !(a in idx) || !(b in idx)) continue;
+    const pk = a < b ? a + '|' + b : b + '|' + a; if (direct.has(pk)) continue; direct.add(pk);
+    const w = S.mine[k], l = w === a ? b : a; beats[idx[w]].push(idx[l]); games[a]++; games[b]++; }
+  // ancestors (everyone known to be better) via reverse reachability
+  const above = bt.map(() => new Set());
+  for (let s0 = 0; s0 < n; s0++) { const st = [s0], seen = new Set([s0]); while (st.length) { const u = st.pop(); for (const v of beats[u]) if (!seen.has(v)) { seen.add(v); st.push(v); above[v].add(s0); } } }
+  const K = Math.min(10, n);
+  const cands = bt.filter((x, i) => above[i].size < K);
+  const rankC = x => { const i = idx[x.id]; let c = 0; above[i].forEach(a => { if (above[a].size < K) c++; }); return c; };
+  cands.sort((a, b) => rankC(a) - rankC(b) || idx[a.id] - idx[b.id]);
+  const known = (a, b) => above[idx[a.id]].has(idx[b.id]) || above[idx[b.id]].has(idx[a.id]);
+  const topC = cands.slice(0, K);
+  let adj = 0; for (let i = 0; i + 1 < topC.length; i++) if (known(topC[i], topC[i + 1]) && above[idx[topC[i + 1].id]].has(idx[topC[i].id])) adj++;
+  const needAdj = Math.max(0, K - 1), needCut = n - K;
+  const cutDone = n - cands.length;
+  const est = n < 2 ? 1 : Math.round((n - 1) + (K - 1) * Math.ceil(Math.log2(n)) * 0.75);
+  const locked0 = cands.length <= K && adj >= needAdj;
+  const prog = n < 2 || locked0 ? 1 : Math.min(0.97, direct.size / est);
+  const O = [...topC, ...bt.filter(x => !topC.includes(x))];
+  const left = Math.max(1, est - direct.size);
+  return {O, n, games, K, cands, known, above, idx, prog, locked: locked0, left, bt};
+}
+function finderPair(subId) {
+  const f = finder(subId), {cands, games, K, above, idx} = f;
+  if (f.n < 2) return null;
+  const shuffle = p => Math.random() < .5 ? p : [p[1], p[0]];
+  const lvl = x => { let c = 0; above[idx[x.id]].forEach(a => { if (above[a].size < K) c++; }); return c; };
+  const groups = {};
+  cands.forEach(x => { const l = lvl(x); (groups[l] ||= []).push(x); });
+  const levels = Object.keys(groups).map(Number).sort((a, b) => a - b);
+  for (const L of levels) {
+    if (L >= K) break;
+    const g = groups[L];
+    if (g.length < 2) continue;
+    g.sort((a, b) => games[a.id] - games[b.id] || idx[a.id] - idx[b.id]);
+    const a = g[0];
+    const same = g.slice(1).filter(x => games[x.id] === games[a.id] && pairKey(subId, a.id, x.id) !== S.last);
+    const opp = same.length ? same : g.slice(1).filter(x => pairKey(subId, a.id, x.id) !== S.last);
+    const b = (opp.length ? opp : g.slice(1))[0];
+    return shuffle([a, b]);
+  }
+  return null;
+}
+function gauntletPair(subId) {
+  const sub = SUBS[subId], me = sub.byId[S.focus]; if (!me) return null;
+  const f = finder(subId, {all:true}), {bt, known, idx} = f;
+  if (!(me.id in idx)) return null;
+  const opp = bt.filter(x => x.id !== me.id && !known(me, x));
+  if (!opp.length) return null;
+  opp.sort((x, y) => Math.abs(idx[x.id] - idx[me.id]) - Math.abs(idx[y.id] - idx[me.id]));
+  S.gLeft = opp.length;
+  return Math.random() < .5 ? [me, opp[0]] : [opp[0], me];
+}
+function needContenders() { const sub = SUBS[S.sub]; return !S.focus && sub.list.filter(x => inFilter(S.sub, x)).length > 20 && !contOf(S.sub); }
+function renderPicker() {
+  const sub = SUBS[S.sub], picked = new Set(S.pick || []), q = (S.pq || '').toLowerCase();
+  const items = sub.list.filter(x => inFilter(S.sub, x)).sort((a, b) => prior(S.sub, b) - prior(S.sub, a));
+  const shown = items.filter(x => !q || x.name.toLowerCase().includes(q));
+  $('reveal').innerHTML = `<div class="picker">
+    <h2>Pick your contenders</h2>
+    <p>Tap everyone who could make your top 10 in <b>${esc(filterLabel(S.sub))}</b>. Picking 12 to 20 works best. The tournament only uses your picks, so it's much faster.</p>
+    <input id="pSearch" class="search" placeholder="Search ${items.length} options" value="${esc(S.pq || '')}" autocomplete="off">
+    <div class="pgrid">${shown.map(x => `<button class="pchip ${picked.has(x.id) ? 'on' : ''}" data-pick="${x.id}" style="--c:${x.c}">${avatar(x, 'dot2')}<span>${esc(x.name)}</span></button>`).join('')}</div>
+    <div class="pbar"><span><b>${picked.size}</b> picked</span>
+      <button class="btn small" data-cont="all">Skip, use all ${items.length}</button>
+      <button class="btn primary small" data-cont="go" ${picked.size < 2 ? 'disabled' : ''}>Start with ${picked.size}</button></div>
+  </div>`;
+}
+function nextPair() {
+  const sub = SUBS[S.sub];
+  const order = viewOrder(S.sub, 'global');
+  const n = order.length;
+  if (n < 2) return null;
+  const myG = {};
+  for (const key in S.mine) { const [s,a,b] = key.split(':'); if (s === S.sub) { myG[a]=(myG[a]||0)+1; myG[b]=(myG[b]||0)+1; } }
+  for (let t = 0; t < 120; t++) {
+    const win = t < 50 ? 3 : t < 90 ? 7 : n;
+    let i;
+    if (t % 3 === 0) { const minG = Math.min(...order.map(x => myG[x.id]||0)); const pool = order.map((x,k)=>k).filter(k => (myG[order[k].id]||0) === minG); i = pool[Math.floor(Math.random()*pool.length)]; }
+    else i = Math.floor(Math.random()*n);
+    const lo = Math.max(0, i - win), hi = Math.min(n-1, i + win);
+    const j = lo + Math.floor(Math.random()*(hi - lo + 1));
+    if (j === i) continue;
+    const key = pairKey(S.sub, order[i].id, order[j].id);
+    if (key === S.last) continue;
+    if (myVoteOn(S.sub, order[i].id, order[j].id) && t < 110) continue;
+    return Math.random() < .5 ? [order[i], order[j]] : [order[j], order[i]];
+  }
+  const a = Math.floor(Math.random()*n), b = (a + 1 + Math.floor(Math.random()*(n-1))) % n;
+  return [order[a], order[b]];
+}
+
+function clearAdv() { if (S.advTimer) { clearTimeout(S.advTimer); S.advTimer = null; } }
+
+function renderViews() {
+  const pending = S.owner ? pendingSugg().length : 0;
+  const v = [['vote','Play'],['rank','Rankings'],['me','Me']];
+  if (S.owner) v.push(['admin','Admin']);
+  $('views').innerHTML = v.map(([id, l]) => `<button data-view="${id}" class="${S.view===id?'on':''}">${l}${id==='admin'&&pending?`<span class="badge">${pending}</span>`:''}</button>`).join('');
+}
+function renderNav() {
+  renderViews();
+  $('catnav').hidden = S.view === 'home' || S.view === 'admin' || S.view === 'me';
+  $('cats').innerHTML = CATS.filter(c => !c.hidden).map(c => `<button class="cat ${c.id===S.cat?'on':''}" data-cat="${c.id}">${esc(c.name)}</button>`).join('');
+  const cat = CATS.find(c => c.id === S.cat);
+  if (NAVCFG[cat.id]) { $('subs').innerHTML = catNav(cat.id); VIEWS.forEach(v => $(v + 'View').hidden = S.view !== v); try { localStorage.setItem('top10.nav', JSON.stringify({sub:S.sub})); localStorage.setItem('top10.filt', JSON.stringify(S.filt)); } catch(e) {} return; }
+  const groups = [];
+  cat.subs.forEach(s => { const g = s.g || ''; let grp = groups.find(x => x.g === g); if (!grp) groups.push(grp = {g, subs:[]}); grp.subs.push(s); });
+  $('subs').innerHTML = groups.map(gr => `<div class="sgroup">${gr.g?`<span class="gl">${esc(gr.g)}</span>`:''}${gr.subs.map(s => `<button class="sub ${s.id===S.sub?'on':''}" data-sub="${s.id}">${esc(s.name)}</button>`).join('')}</div>`).join('');
+  VIEWS.forEach(v => $(v + 'View').hidden = S.view !== v);
+  try { localStorage.setItem('top10.nav', JSON.stringify({sub:S.sub})); } catch(e) {}
+}
+
+function curSide(catId) { const sides = NAVCFG[catId].sides; return sides.find(sd => sd.tabs.includes(S.sub)) || sides[0]; }
+function catNav(catId) {
+  const cfg = NAVCFG[catId], side = curSide(catId), sub = SUBS[S.sub];
+  let h = '<div class="snav">';
+  if (cfg.sides.length > 1) h += `<div class="seg">${cfg.sides.map(sd => `<button data-side="${sd.id}" class="${sd === side ? 'on' : ''}">${esc(sd.label)}</button>`).join('')}</div>`;
+  if (side.tabs.length > 1) h += `<div class="sporttabs">${side.tabs.map(id => `<button class="sub ${S.sub === id ? 'on' : ''}" data-sub="${id}">${esc(SUBS[id].name)}</button>`).join('')}</div>`;
+  const sp = sub.ath;
+  if (sp && sp !== 'all') {
+    const f = S.filt[sp], F = FILTERS[sp];
+    h += `<div class="fsel"><label>Era <select id="fEra"><option value="">Any</option>${F.era.map(e => `<option ${f.era===e?'selected':''}>${esc(e)}</option>`).join('')}</select></label>
+      <label>Position <select id="fPos"><option value="">Any</option>${F.pos.map(e => `<option ${f.pos===e?'selected':''}>${esc(e)}</option>`).join('')}</select></label>
+      ${f.era || f.pos ? '<button class="linkbtn" data-fclear="1">Clear</button>' : ''}</div>`;
+  } else if (sp === 'all') h += `<div class="fsel"><span class="fnote">20 legends each from the NBA, NFL, NHL, MLB and soccer</span></div>`;
+  else if (sub.fg) {
+    const f = S.filt[sub.fg];
+    const decs = [...new Set(sub.list.map(x => decadeOf(S.sub, x.name)).filter(Boolean))].sort();
+    if (f.era && !decs.includes(f.era)) decs.push(f.era);
+    h += `<div class="fsel"><label>Era <select id="fDec"><option value="">Any</option>${decs.map(e => `<option ${f.era===e?'selected':''}>${esc(e)}</option>`).join('')}</select></label>
+      ${f.era ? '<button class="linkbtn" data-fclear="1">Clear</button>' : ''}</div>`;
+  }
+  const ch = CHIP[S.sub];
+  if (ch) h += `<div class="chips"><span class="gl">${esc(ch.label)}</span>${['', ...ch.opts].map(o => `<button class="fchip ${(S.chip[S.sub] || '') === o ? 'on' : ''}" data-chip="${esc(o)}">${o ? esc(o) : 'All'}</button>`).join('')}</div>`;
+  return h + '</div>';
+}
+function pruneVT() { const cut = Date.now() - 30 * 864e5, o = {}; for (const k in S.vt) if (S.vt[k] > cut && S.mine[k]) o[k] = S.vt[k]; S.vt = o; return {...o}; }
+const canonKey = k => { const [sid, a, b] = k.split(':'); const sub = SUBS[sid]; if (!sub) return null; let c = sid;
+  if (sub.ath) { const sp = [ACC[sub.byId[a]?.name]?.lg, ACC[sub.byId[b]?.name]?.lg]; c = sp[0] && sp[0] === sp[1] && SUBS[sp[0]] ? sp[0] : 'ath-all'; }
+  else if (sub.grp) c = POOLGROUPS[sub.grp][0];
+  if (!SUBS[c] || !SUBS[c].byId[a] || !SUBS[c].byId[b] || SUBS[c].cat.hidden) return null; return pairKey(c, a, b); };
+function trending() {
+  if (S.mode === 'shared' && S.trend) {
+    const cnt = {}; S.trend.forEach(r => { const c = canonKey(`${r.list_id}:${r.a}:${r.b}`); if (c) cnt[c] = (cnt[c] || 0) + Number(r.n); });
+    const week = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 9);
+    if (week.length) return {title:'Trending this week', list:week, unit:'this week'};
+  }
+  const cut = Date.now() - 7 * 864e5, cnt = {};
+  const bump = (k, t) => { const c = canonKey(k); if (!c) return; if (t && t > cut) cnt[c] = (cnt[c] || 0) + 1; };
+  S.othersVT.forEach(([k, t]) => bump(k, t));
+  for (const k in S.mine) bump(k, S.vt[k]);
+  const week = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 9);
+  if (week.length >= 3) return {title:'Trending this week', list:week, unit:'this week'};
+  const tot = {};
+  for (const k in S.others) { const c = canonKey(k); if (c) tot[c] = (tot[c] || 0) + Object.values(S.others[k]).reduce((x, y) => x + y, 0); }
+  for (const k in S.mine) { const c = canonKey(k); if (c) tot[c] = (tot[c] || 0) + 1; }
+  const top = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 9);
+  return {title: top.length ? 'Most voted' : 'Trending this week', list: top, unit:'total'};
+}
+function matchCard(sid, A, B, label, extra) {
+  const sp = splitFor(pairKey(sid, A.id, B.id));
+  const cA = sp.a === A.id ? sp.ca : sp.cb, cB = sp.a === A.id ? sp.cb : sp.ca, tot = cA + cB;
+  const pA = tot ? Math.round(cA / tot * 100) : 50, mine = myVoteOn(sid, A.id, B.id);
+  return `<button class="fo" data-fo="${sid}|${A.id}|${B.id}">
+    <div class="lab"><span>${esc(label)}</span><span>${extra || (tot ? tot + ' vote' + (tot===1?'':'s') : 'No votes yet')}${mine ? ' &middot; voted' : ''}</span></div>
+    <div class="mu"><div class="side">${avatar(A, 'dot')}<div class="nm">${esc(A.name)}</div></div><div class="v">VS</div><div class="side r">${avatar(B, 'dot')}<div class="nm">${esc(B.name)}</div></div></div>
+    <div class="bar"><div class="l" style="width:${tot?pA:0}%"></div><div class="r" style="width:${tot?100-pA:0}%"></div></div>
+    <div class="split"><span>${tot?pA+'%':'&nbsp;'}</span><span>${tot?(100-pA)+'%':''}</span></div></button>`;
+}
+function theirVoteOn(map, sid, a, b) { const ss = srcSet(sid) || [sid]; for (const x of ss) { const v = map[pairKey(x, a, b)]; if (v) return v; } return undefined; }
+function friendsLine(sid, a, b, myPick) {
+  return '';
+  const agree = [], dis = [];
+  Object.keys(S.byUser).forEach(uid => { const v = theirVoteOn(S.byUser[uid], sid, a, b); if (!v) return; (v === myPick ? agree : dis).push(uid); });
+  if (!agree.length && !dis.length) return '';
+  loadNames([...agree, ...dis].filter(id => !S.names[id]));
+  const nm = ids => ids.slice(0, 4).map(id => esc(S.names[id] || 'a friend')).join(', ') + (ids.length > 4 ? ` +${ids.length - 4}` : '');
+  return `${agree.length ? `<span class="fr-ok">Agreed: ${nm(agree)}</span>` : ''}${dis.length ? `<span class="fr-no">Disagreed: ${nm(dis)}</span>` : ''}`;
+}
+function renderHome() {
+  const tr = trending();
+  let row = tr.list.slice(0, 3).map(([k, n]) => { const [sid, a, b] = k.split(':'); const s2 = SUBS[sid]; return matchCard(sid, s2.byId[a], s2.byId[b], s2.label, `${n} vote${n===1?'':'s'} ${tr.unit}`); });
+  let title = tr.title;
+  if (row.length < 3) { title = 'Big debates'; row = FACEOFFS.slice(0, 3).map(([sid, an, bn]) => { const s2 = SUBS[sid]; const A = s2.byId[slug(an)], B = s2.byId[slug(bn)]; return A && B ? matchCard(sid, A, B, s2.label) : ''; }); }
+  $('homeView').innerHTML = `
+    <div class="hero">
+      <h1>Who's the <span>greatest</span>?</h1>
+      <p>Tap to pick. GOATlist runs a knockout tournament on your picks and locks in your top 10, then shows how it stacks up against everyone else's.</p>
+      <div class="actions" style="margin-top:0"><button class="btn primary" data-go="vote">Find your top 10 &rarr;</button><button class="btn" data-go="rank">See the rankings</button></div>
+    </div>
+    <div class="tiles big">${CATS.filter(c => !c.hidden).map(c => `<button class="tile" style="--c:${c.c}" data-tile="${c.id}"><b>${esc(c.name)}</b><span>${esc(c.blurb)}</span></button>`).join('')}</div>
+    <div class="sectitle" style="margin-top:34px"><h2>${esc(title)}</h2></div>
+    <div class="fogrid three">${row.join('')}</div>`;
+}
+function renderStats() {
+  if (S.focus && SUBS[S.sub].byId[S.focus]) {
+    $('stats').innerHTML = `<div class="prog gaunt"><div class="prog-top"><span><b>${esc(SUBS[S.sub].byId[S.focus].name)} vs everyone</b> &middot; ${esc(filterLabel(S.sub))}</span><span>${S.gLeft || 0} matchup${S.gLeft === 1 ? '' : 's'} left</span></div>
+      <div class="prog-bot"><span>Closest rivals first. Skips anyone already settled by your votes.</span><button class="linkbtn" data-gexit="1">Exit</button></div></div>`;
+    return;
+  }
+  if ($('voteView').classList.contains('picking')) { $('stats').innerHTML = ''; return; }
+  const f = finder(S.sub), pct = Math.round(f.prog * 100);
+  const big = SUBS[S.sub].list.filter(x => inFilter(S.sub, x)).length > 20;
+  $('stats').innerHTML = `<div class="prog">
+    <div class="prog-top"><span><b>Your top 10</b> &middot; ${esc(filterLabel(S.sub))}</span>
+      <span>${f.locked ? '<b class="ok">Locked in</b>' : `${pct}% &middot; about ${f.left} tap${f.left === 1 ? '' : 's'} to go`}</span></div>
+    <div class="prog-bar"><div style="width:${pct}%"></div></div>
+    <div class="prog-bot"><span>Lv ${level()} &middot; ${streak()}-day streak</span>
+      <span>${big ? `<button class="linkbtn" data-cont="edit">${contOf(S.sub) && !contOf(S.sub).includes('*') ? 'Edit contenders (' + contOf(S.sub).length + ')' : 'Pick contenders'}</button> &middot; ` : ''}<button class="linkbtn" data-reveal="1">${f.locked ? 'See my top 10' : 'Peek at my top 10'}</button></span></div></div>`;
+}
+function renderReveal() {
+  const f = finder(S.sub), sub = SUBS[S.sub], mine = f.O.filter(x => f.games[x.id] > 0).slice(0, 10);
+  const crowd = viewOrder(S.sub, 'global').filter(x => x.g > 0).slice(0, 10), cset = new Set(crowd.map(x => x.id));
+  const overlap = mine.filter(x => cset.has(x.id)).length;
+  const text = `My GOATlist: ${filterLabel(S.sub)}\n` + mine.map((x, i) => `${i + 1}. ${x.name}`).join('\n') + `\n\nFound in ${Object.keys(S.mine).length} taps on GOATlist. What's yours?`;
+  $('reveal').innerHTML = `<div class="reveal">
+    <div class="sharecard">
+      <div class="sc-logo">GOAT<b>list</b></div>
+      <h4>${f.locked ? 'My top 10' : 'My top 10 so far'}: ${esc(filterLabel(S.sub))}</h4>
+      <ol>${mine.map((x, i) => `<li><span>${i + 1}</span>${esc(x.name)}${cset.has(x.id) ? '' : '<em>hot take</em>'}</li>`).join('') || '<li>Vote a few times first.</li>'}</ol>
+      <div class="sc-foot">${crowd.length ? `${overlap} of 10 match the crowd's top 10` : 'Ranked head-to-head on GOATlist'}</div>
+    </div>
+    <div class="share-actions"><button class="btn primary small" id="imgBtn">Save image</button><button class="btn small" id="copyBtn">Copy list</button><button class="btn small" data-reveal="0">${f.locked ? 'Keep refining' : 'Keep voting'}</button><button class="btn small" data-nextlist="1">Next list &rarr;</button><span class="copied" id="copied"></span></div>
+  </div>`;
+  $('copyBtn').onclick = async () => { try { await navigator.clipboard.writeText(text); $('copied').textContent = 'Copied'; logEvent('share_copy', S.sub); } catch (e) { $('copied').textContent = 'Couldn’t copy here.'; } };
+  $('imgBtn').onclick = () => { shareImage(`My top 10: ${filterLabel(S.sub)}`, mine.map(x => x.name)); logEvent('share_image', S.sub); };
+  $('reveal').scrollIntoView({behavior:'smooth', block:'start'});
+}
+S.photos = {};
+const photoOf = name => { const p = S.photos[slug(name)]; return p && /^[a-z0-9-]+\.(jpg|png|webp|gif)$/.test(p) ? SB_URL + '/storage/v1/object/public/photos/' + p : null; };
+function avatar(item, cls) { const p = photoOf(item.name); return p ? `<span class="${cls} ph-on" style="--c:${item.c}"><img src="${p}" alt="" loading="lazy"></span>` : `<span class="${cls}" style="--c:${item.c}">${esc(initials(item.name))}</span>`; }
+const infoOf = (subId, name) => (INFOMAP[subId] || {})[name] || null;
+function infoText(subId, name) { const p = infoOf(subId, name); return p ? p.filter(x => x[0] !== '*').join(' · ') : ''; }
+function infoAwards(subId, name, cls) { const p = infoOf(subId, name); return p ? p.filter(x => x[0] === '*').map(x => `<span class="${cls || 'acc'}">${esc(x.slice(1))}</span>`).join('') : ''; }
+function metaFor(item, rankMap) {
+  const r = rankMap[item.id];
+  const chip = item.team ? `<span class="chip">${esc(TEAMN[item.team] || item.team)}</span>` : '';
+  const info = infoText(S.sub, item.name);
+  const tg = SUBS[S.sub].ath === 'all' && accOf(item.name) ? LGNAME[accOf(item.name).lg] : (SUBS[S.sub].tagOf || {})[item.name];
+  const lg = tg ? `<span class="chip lgchip">${esc(tg)}</span>` : '';
+  const rank = r && r.g ? `#${r.rank} in ${esc(filterLabel(S.sub))}` : esc(filterLabel(S.sub));
+  return lg + chip + (info ? `<span class="info">${esc(info)}</span><br>` : '') + rank;
+}
+function fillCard(el, item, rankMap) {
+  el.style.setProperty('--c', item.c);
+  const ph = photoOf(item.name), mono = el.querySelector('.mono');
+  mono.classList.toggle('ph-on', !!ph);
+  if (ph) mono.innerHTML = `<img src="${ph}" alt="">`; else mono.textContent = initials(item.name);
+  el.querySelector('.pname').textContent = item.name;
+  el.querySelector('.pmeta').innerHTML = metaFor(item, rankMap);
+  el.querySelector('.accs').innerHTML = (isAth(S.sub) || SUBS[S.sub].fr ? accChips(item.name, 3) : '') + infoAwards(S.sub, item.name);
+  el.querySelector('.pct').textContent = '';
+  el.classList.remove('win','lose','locked');
+}
+
+function showPair() {
+  clearAdv();
+  $('voteView').classList.remove('picking');
+  if (!S.forced && needContenders()) { $('voteView').classList.add('picking'); S.pick = S.pick && S.pickFor === contKey() ? S.pick : []; S.pickFor = contKey(); renderPicker(); renderStats(); return; }
+  if (S.focus && !S.forced) { const gp = gauntletPair(S.sub); if (!gp) { const nm = SUBS[S.sub].byId[S.focus]?.name; S.focus = null; if (nm) toast(`${esc(nm)} is fully placed in your ranking`); } else { S.pair = gp; S.isFaceoff = false; } }
+  if (S.forced) { S.pair = S.forced; S.forced = null; S.isFaceoff = true; } else if (!S.focus) { S.pair = finderPair(S.sub) || nextPair(); S.isFaceoff = false; }
+  S.locked = false;
+  if (finder(S.sub).locked) S.lockedSubs.add(bKey());
+  if (!S.pair) { $('result').innerHTML = '<div class="empty">This list needs at least two options.</div>'; return; }
+  const order = viewOrder(S.sub, 'global');
+  const rankMap = Object.fromEntries(order.map((x,i) => [x.id, {...x, rank:i+1}]));
+  $('prompt').innerHTML = (S.isFaceoff ? '<span class="fo-tag">Famous face-off</span>' : '') + `Who's <span>greater</span>?`;
+  $('arena').classList.remove('revealed');
+  fillCard($('pickA'), S.pair[0], rankMap);
+  fillCard($('pickB'), S.pair[1], rankMap);
+  $('tape').innerHTML = (isAth(S.sub) || SUBS[S.sub].fr) ? taleOfTape(S.pair[0], S.pair[1]) : '';
+  $('result').innerHTML = `<div class="actions"><button class="btn small" id="skipBtn">Skip</button></div>${S.focus ? '' : `<div class="gline"><button class="linkbtn" data-gauntlet="${S.pair[0].id}">${esc(S.pair[0].name)} vs everyone</button><button class="linkbtn" data-gauntlet="${S.pair[1].id}">${esc(S.pair[1].name)} vs everyone</button></div>`}`;
+  if (!S.keepReveal) $('reveal').innerHTML = ''; S.keepReveal = false;
+  renderStats();
+  renderSuggest();
+}
+
+function vote(side) {
+  if (S.locked || !S.pair) return;
+  if (S.readOnly) { flash('You can browse the rankings, but voting needs Contributor access to this page.', true); return; }
+  S.locked = true;
+  const [A, B] = S.pair, winner = side === 0 ? A : B;
+  const key = pairKey(S.sub, A.id, B.id);
+  const changed = S.mine[key] !== winner.id;
+  S.mine[key] = winner.id; S.vt[key] = Date.now(); S.last = key; S.session++;
+  const sp = splitFor(key);
+  const cA = sp.a === A.id ? sp.ca : sp.cb, cB = sp.a === A.id ? sp.cb : sp.ca;
+  const tot = cA + cB, pA = Math.round(cA / tot * 100), pB = 100 - pA;
+  const P = S.prog, today = dayStr(new Date());
+  P.xp += 10;
+  if (!P.days.includes(today)) { P.days.push(today); P.days = P.days.slice(-400); }
+  P.best = Math.max(P.best || 0, streak());
+  if (tot >= 5 && (side === 0 ? pA : pB) <= 20) P.ht++;
+  checkBadges();
+  persist();
+  const wasLocked = S.lockedSubs.has(bKey());
+  const nowLocked = finder(S.sub).locked;
+  if (nowLocked && !wasLocked) { S.lockedSubs.add(bKey()); S.showReveal = true; logEvent('top10_locked', S.sub); }
+  if (!S.startedLists) S.startedLists = new Set();
+  if (!S.startedLists.has(S.sub)) { S.startedLists.add(S.sub); logEvent('list_started', S.sub); }
+  $('arena').classList.add('revealed');
+  const eA = $('pickA'), eB = $('pickB');
+  [eA, eB].forEach(e => e.classList.add('locked'));
+  (side === 0 ? eA : eB).classList.add('win'); (side === 0 ? eB : eA).classList.add('lose');
+  eA.querySelector('.pct').textContent = pA + '%'; eB.querySelector('.pct').textContent = pB + '%';
+  const agree = side === 0 ? pA : pB;
+  const msg = tot <= 1 ? `First vote on this matchup. You set the tone.`
+    : agree > 50 ? `You're with the crowd. <strong>${agree}%</strong> picked ${esc(winner.name)}.`
+    : agree === 50 ? `Dead even. The world is split down the middle.`
+    : `Hot take. Only <strong>${agree}%</strong> agree with you.`;
+  const fr = friendsLine(S.sub, A.id, B.id, winner.id);
+  S.frCtx = fr ? [S.sub, A.id, B.id, winner.id] : null;
+  $('result').innerHTML = `
+    <div class="bar"><div class="l" style="width:${pA}%"></div><div class="r" style="width:${pB}%"></div></div>
+    <div class="split"><span>${esc(A.name)} &middot; ${cA} vote${cA===1?'':'s'}</span><span>${cB} vote${cB===1?'':'s'} &middot; ${esc(B.name)}</span></div>
+    <div class="verdict">${msg}</div>
+    ${fr ? `<div class="friends" id="frLine">${fr}</div>` : ''}
+    <div class="timer" id="advBar"><div></div></div>
+    <div class="actions"><button class="btn small" id="pauseBtn">Pause</button><button class="btn small primary" id="nextBtn">Next &rarr;</button></div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => { const b = $('advBar'); if (b) b.classList.add('run'); }));
+  if (S.showReveal) { S.showReveal = false; clearAdv(); ['.actions', '#advBar'].forEach(q => { const el = $('result').querySelector(q); if (el) el.remove(); }); toast('Your top 10 is locked in'); renderReveal(); renderStats(); return; }
+  S.advTimer = setTimeout(() => { S.advTimer = null; if (S.view === 'vote' && S.locked) showPair(); }, fr ? 2200 : 1000);
+  renderStats();
+}
+
+function renderSuggest() {
+  const box = $('suggestBox');
+  if (!S.showSuggest) { box.innerHTML = ''; return; }
+  const opts = CATS.filter(c => !c.hidden).map(c => `<optgroup label="${esc(c.name)}">${c.subs.map(s => `<option value="${s.id}" ${s.id===S.sub?'selected':''}>${esc(s.label)}</option>`).join('')}</optgroup>`).join('');
+  const mine = S.mySugg.slice(-5).reverse().map(x => {
+    const d = x.status && x.status !== 'pending' ? x.status : S.extras.decided[x.id];
+    return `<div class="sm" style="font-size:12px;color:var(--muted);margin-top:4px">${esc(x.name)} in ${esc(SUBS[x.sub]?.label || x.sub)}: ${d==='ok'?'<span style="color:var(--green)">added</span>':d==='no'?'not added':'waiting for review'}</div>`;
+  }).join('');
+  box.innerHTML = `<div class="panel" style="margin-top:26px">
+    <h3>Suggest a missing option</h3>
+    <form id="suggForm">
+      <div class="field"><label for="sgSub">List</label><select id="sgSub">${opts}</select></div>
+      <div class="field"><label for="sgName">Name</label><input id="sgName" maxlength="60" placeholder="Vince Carter" autocomplete="off"></div>
+      <div class="ferr" id="sgErr"></div>
+      <div class="share-actions"><button class="btn primary small" type="submit">Send suggestion</button><button class="btn small" type="button" data-suggest="0">Close</button></div>
+    </form>
+    ${mine ? `<div style="margin-top:14px"><div class="rest-title">Your suggestions</div>${mine}</div>` : ''}
+  </div>`;
+  $('sgName').addEventListener('input', () => { $('sgErr').textContent = ''; $('sgErr').className = 'ferr'; });
+  $('suggForm').addEventListener('submit', e => { e.preventDefault(); submitSuggestion(); });
+}
+
+async function submitSuggestion() {
+  const sub = $('sgSub').value, name = $('sgName').value.trim().replace(/\s+/g, ' ');
+  const err = $('sgErr');
+  if (!name) { err.textContent = 'Enter a name first.'; return; }
+  if (name.length < 2) { err.textContent = 'That name is too short.'; return; }
+  if (SUBS[sub].byId[slug(name)]) { err.textContent = `${name} is already in ${SUBS[sub].label}.`; return; }
+  if (S.mySugg.some(x => x.sub === sub && slug(x.name) === slug(name))) { err.textContent = 'You already suggested that one.'; return; }
+  if (S.mode !== 'shared') { err.textContent = 'Suggestions need an internet connection. Refresh and try again.'; return; }
+  if (S.mySugg.filter(x => x.status === 'pending').length >= 20) { err.textContent = 'You have 20 suggestions waiting already. Hang tight.'; return; }
+  const {data, error} = await S.sb.from('suggestions').insert({user_id: S.uid, list_id: sub, name}).select('id').single();
+  if (error) { err.textContent = 'Couldn’t send that. Try again.'; return; }
+  S.mySugg.push({id: String(data.id), sub, name, status: 'pending', t: Date.now()});
+  renderSuggest();
+  const e2 = $('sgErr'); if (e2) { e2.className = 'fok'; e2.textContent = `Sent. ${name} will show up once it's approved.`; }
+}
+
+function renderRank() {
+  const sub = SUBS[S.sub], mode = S.rankMode;
+  const order = viewOrder(S.sub, mode).filter(x => x.g > 0);
+  const top = order.slice(0, 10), rest = order.slice(10);
+  const row = (x, i) => { const inf = infoText(S.sub, x.name), aw = infoAwards(S.sub, x.name, 'aw');
+    return `<div class="row" style="--c:${x.c}"><div class="rk">${i+1}</div><div><div class="nm">${photoOf(x.name) ? avatar(x, 'thumb') : ''}${esc(x.name)}</div><div class="sm">${x.team?esc(TEAMN[x.team]||'')+' &middot; ':''}${inf?esc(inf)+' &middot; ':''}${x.w}-${x.g-x.w}</div>${accOf(x.name)?`<div class="acl">${accLine(x.name)}</div>`:''}${aw?`<div class="acl">${aw}</div>`:''}</div><div class="wr">${x.elo}<small>rating</small><button class="linkbtn rowg" data-gauntlet="${x.id}" data-gogo="1">vs everyone</button></div></div>`; };
+  const unranked = sub.list.filter(x => inFilter(S.sub, x)).length - order.length;
+  const myTop = viewOrder(S.sub, 'mine').filter(x => x.g > 0).slice(0, 10);
+  $('rankView').innerHTML = `
+    <div class="rankhead">
+      <h2>${mode==='mine'?'Your':'The'} <span>top 10</span>: ${esc(filterLabel(S.sub))}</h2>
+      ${mode !== 'mine' ? (() => { const tv = order.reduce((a, x) => a + x.g, 0) / 2; return tv < 100 ? `<span class="early">Early rankings &middot; ${Math.round(tv)} vote${tv === 1 ? '' : 's'} so far</span>` : ''; })() : ''}
+      <div class="rh-right">
+        <div class="toggle"><button data-rm="global" class="${mode==='global'?'on':''}">Everyone</button><button data-rm="mine" class="${mode==='mine'?'on':''}">Just me</button></div>
+        <button class="btn small" data-share="1">Share my top 10</button>
+      </div>
+    </div>
+    <div id="sharePanel"></div>
+    ${order.length ? `
+      <div class="list top10">${top.map(row).join('')}</div>
+      ${rest.length ? `<div class="rest-title">The rest</div><div class="list rest">${rest.map((x,i) => row(x, i+10)).join('')}</div>` : ''}
+      ${unranked ? `<div style="color:var(--dim);font-size:12px;margin-top:14px">${unranked} more not voted on yet.</div>` : ''}
+    ` : `<div class="empty">No votes in ${esc(filterLabel(S.sub))} yet.<br><button class="btn primary" data-go="vote">Start voting</button></div>`}`;
+  if (S.sharing) renderShare(myTop);
+}
+
+function renderShare(myTop) {
+  const sub = SUBS[S.sub], p = $('sharePanel'); if (!p) return;
+  if (!myTop.length) { p.innerHTML = `<div class="panel">Vote on a few ${esc(sub.label)} matchups first, then your top 10 will show up here.</div>`; return; }
+  const text = `My GOATlist: ${sub.label}\n` + myTop.map((x,i) => `${i+1}. ${x.name}`).join('\n') + `\n\nRanked head-to-head on GOATlist. What's yours?`;
+  p.innerHTML = `<div class="panel">
+    <div class="sharecard">
+      <div class="sc-logo">GOAT<b>list</b></div>
+      <h4>My top 10: ${esc(sub.label)}</h4>
+      <ol>${myTop.map((x,i) => `<li><span>${i+1}</span>${esc(x.name)}</li>`).join('')}</ol>
+      <div class="sc-foot">Ranked head-to-head on GOATlist</div>
+    </div>
+    <div class="share-actions"><button class="btn primary small" id="imgBtn">Save image</button><button class="btn small" id="copyBtn">Copy list</button><button class="btn small" data-share="0">Close</button><span class="copied" id="copied"></span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Copies your list as text to paste into a chat or story. For an image, take a screenshot of the card.</div>
+  </div>`;
+  $('imgBtn').onclick = () => { shareImage(`My top 10: ${sub.label}`, myTop.map(x => x.name)); logEvent('share_image', S.sub); };
+  $('copyBtn').onclick = async () => {
+    try { await navigator.clipboard.writeText(text); $('copied').textContent = 'Copied'; }
+    catch (e) { $('copied').textContent = 'Couldn’t copy here. Select the card and copy instead.'; }
+  };
+}
+
+async function loadNames(ids) { return;
+  if (!S.user || !ids.length) return;
+  try { const ps = await S.user.profiles(ids); let ch = false; ids.forEach(id => { const n = ps && ps[id] && ps[id].name; if (n && S.names[id] !== n) { S.names[id] = n; ch = true; } }); if (ch && S.view === 'cmp') renderCmp(); if (ch && S.frCtx && $('frLine')) $('frLine').innerHTML = friendsLine(...S.frCtx); }
+  catch (e) {}
+}
+const nameOf = (id, i) => S.names[id] || `Voter ${i + 1}`;
+
+function renderCmp() {
+  const box = $('meCmp') || $('cmpView');
+  const listSel = `<label for="cmpSub" style="color:var(--muted);font-size:14px">List</label><select id="cmpSub">${CATS.filter(c => !c.hidden).map(c => `<optgroup label="${esc(c.name)}">${c.subs.map(sb => `<option value="${sb.id}" ${sb.id === S.sub ? 'selected' : ''}>${esc(sb.label)}</option>`).join('')}</optgroup>`).join('')}</select>`;
+  const others = Object.keys(S.byUser).filter(id => id !== S.uid && Object.keys(S.byUser[id]).length);
+  if (!others.length || S.mode !== 'shared') {
+    box.innerHTML = `<div class="empty">${S.mode !== 'shared' ? 'Comparing needs the shared version of GOATlist.' : 'Nobody else has voted yet.'}<br>Share GOATlist with friends at Contributor access, and once they vote you can compare your rankings here.</div>`;
+    return;
+  }
+  others.sort((a, b) => Object.keys(S.byUser[b]).length - Object.keys(S.byUser[a]).length);
+  if (!others.includes(S.cmpWith)) S.cmpWith = others[0];
+  loadNames(others.filter(id => !S.names[id]));
+  const theirs = S.byUser[S.cmpWith], idx = others.indexOf(S.cmpWith), them = nameOf(S.cmpWith, idx);
+  let both = 0, agree = 0, bothSub = 0, agreeSub = 0;
+  const dis = [];
+  const perCat = {};
+  for (const k in S.mine) if (k in theirs) {
+    both++; const s = k.split(':')[0]; const cat = SUBS[s]?.cat.id;
+    perCat[cat] = perCat[cat] || {b:0,a:0}; perCat[cat].b++;
+    if (s === S.sub) bothSub++;
+    if (S.mine[k] === theirs[k]) { agree++; perCat[cat].a++; if (s === S.sub) agreeSub++; }
+    else dis.push(k);
+  }
+  const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '–';
+  dis.sort((x, y) => (y.split(':')[0] === S.sub) - (x.split(':')[0] === S.sub));
+  const sub = SUBS[S.sub];
+  const mineTop = viewOrder(S.sub, null, S.mine).filter(x => x.g > 0).slice(0, 10);
+  const theirTop = viewOrder(S.sub, null, theirs).filter(x => x.g > 0).slice(0, 10);
+  const mineIds = new Set(mineTop.map(x => x.id)), theirIds = new Set(theirTop.map(x => x.id));
+  const col = (list, other) => list.length ? `<div class="list">${list.map((x,i) => `<div class="row ${other.has(x.id)?'shared':''}" style="--c:${x.c}"><div class="rk">${i+1}</div><div class="nm">${esc(x.name)}</div></div>`).join('')}</div>` : `<div class="empty" style="padding:24px">No ${esc(sub.label)} votes yet.</div>`;
+  const nm = (k, id) => { const s = SUBS[k.split(':')[0]]; return esc(s?.byId[id]?.name || id); };
+  const catCards = CATS.filter(c => perCat[c.id] && perCat[c.id].b >= 3).map(c => `<div class="mcard"><div class="big" style="font-size:32px">${pct(perCat[c.id].a, perCat[c.id].b)}</div><div class="lbl">${esc(c.name)} &middot; ${perCat[c.id].b} shared</div></div>`).join('');
+  box.innerHTML = `
+    <div class="cmp-top">${listSel}<label for="cmpSel" style="color:var(--muted);font-size:14px">Compare with</label>
+      <select id="cmpSel">${others.map((id,i) => `<option value="${esc(id)}" ${id===S.cmpWith?'selected':''}>${esc(nameOf(id,i))} (${Object.keys(S.byUser[id]).length} votes)</option>`).join('')}</select></div>
+    <div class="match">
+      <div class="mcard"><div class="big">${pct(agree, both)}</div><div class="lbl">Taste match overall &middot; ${both} shared matchup${both===1?'':'s'}</div></div>
+      <div class="mcard"><div class="big">${pct(agreeSub, bothSub)}</div><div class="lbl">Match in ${esc(sub.label)} &middot; ${bothSub} shared</div></div>
+      ${catCards}
+    </div>
+    ${both === 0 ? `<div class="panel" style="color:var(--muted);font-size:14px">You and ${esc(them)} haven't voted on the same matchup yet. Famous face-offs on the home page are the fastest way to overlap.</div>` : ''}
+    <div class="twocol">
+      <div><h4>You: ${esc(sub.label)}</h4>${col(mineTop, theirIds)}</div>
+      <div><h4>${esc(them)}: ${esc(sub.label)}</h4>${col(theirTop, mineIds)}</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin:-10px 0 22px">Highlighted rows are on both lists.</div>
+    <div class="sectitle"><h2>Biggest <span style="color:var(--red)">disagreements</span></h2></div>
+    ${dis.length ? `<div class="dis">${dis.slice(0, 10).map(k => `<div class="disrow"><div><div class="who">You picked</div>${nm(k, S.mine[k])}</div><div><div class="who">${esc(them)} picked</div>${nm(k, theirs[k])}</div><div class="sub2">${esc(SUBS[k.split(':')[0]]?.label || '')}</div></div>`).join('')}</div>` : `<div class="empty" style="padding:24px">No disagreements yet.</div>`}`;
+}
+
+function pendingSugg() {
+  const out = [];
+  S.allSugg.forEach(({uid, list}) => list.forEach(x => {
+    if (S.extras.decided[x.id] || !SUBS[x.sub]) return;
+    if (SUBS[x.sub].byId[slug(x.name)]) return;
+    out.push({...x, uid});
+  }));
+  return out.sort((a, b) => a.t - b.t);
+}
+function renderAdmin() {
+  if (!S.owner) { $('adminView').innerHTML = ''; return; }
+  const p = pendingSugg();
+  const added = Object.entries(S.extras.items).flatMap(([sid, names]) => (names||[]).map(n => ({sid, n})));
+  $('adminView').innerHTML = `<div class="sectitle"><h2>Last 7 <span>days</span></h2><small>Only you can see this</small></div><div class="match" id="statsBox"><div class="mcard"><div class="lbl">Loading…</div></div></div>` + photoAdmin() + `
+    <div class="sectitle" style="margin-top:30px"><h2>Suggestion <span>queue</span></h2><small>Only you can see this</small></div>
+    ${p.length ? p.map(x => `<div class="sugg"><div><div style="font-weight:600">${esc(x.name)}</div><div class="sm">${esc(SUBS[x.sub].label)} &middot; from ${esc(S.names[x.uid] || 'a voter')}</div></div>
+      <div style="display:flex;gap:8px"><button class="btn small ok" data-approve="${esc(x.id)}">Add</button><button class="btn small no" data-reject="${esc(x.id)}">Reject</button></div></div>`).join('')
+      : '<div class="empty">No suggestions waiting.</div>'}
+    ${added.length ? `<div class="rest-title" style="margin-top:26px">Added from suggestions</div>${added.map(a => `<div class="sugg"><div><div style="font-weight:600">${esc(a.n)}</div><div class="sm">${esc(SUBS[a.sid]?.label || a.sid)}</div></div><span></span></div>`).join('')}` : ''}`;
+  S.sb.rpc('event_summary', {days: 7}).then(({data}) => { const b = $('statsBox'); if (!b) return; const L = {visit:'Visits', list_started:'Lists started', top10_locked:'Top 10s finished', share_image:'Images saved', share_copy:'Lists copied'};
+    b.innerHTML = (data || []).length ? data.map(r => `<div class="mcard"><div class="big" style="font-size:32px">${Number(r.n).toLocaleString()}</div><div class="lbl">${esc(L[r.kind] || r.kind)} &middot; ${Number(r.people)} people</div></div>`).join('') : '<div class="mcard"><div class="lbl">No activity yet.</div></div>'; });
+}
+
+S.phSub = 'ath-all';
+function photoAdmin() {
+  const opts = CATS.filter(c => !c.hidden).map(c => `<optgroup label="${esc(c.name)}">${c.subs.map(sb => `<option value="${sb.id}" ${sb.id === S.phSub ? 'selected' : ''}>${esc(sb.label)}</option>`).join('')}</optgroup>`).join('');
+  const sb = SUBS[S.phSub], have = sb.list.filter(x => photoOf(x.name)).length;
+  if (!S.assets) return `<div class="sectitle"><h2>Card <span>photos</span></h2></div><div class="panel" style="color:var(--muted);font-size:14px">Photo uploads are only available to you on the published GOATlist page.</div>`;
+  return `<div class="sectitle"><h2>Card <span>photos</span></h2><small>Only you can see this</small></div>
+    <div class="panel"><div class="cmp-top" style="margin-bottom:12px"><label for="phSel" style="color:var(--muted);font-size:14px">List</label><select id="phSel">${opts}</select><span style="font-size:13px;color:var(--muted)">${have}/${sb.list.length} have photos</span></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Upload a JPG, PNG or WebP under 20 MB for each card. Photos are shared across every list the same name appears in. Only upload images you have the right to use.</div>
+    <div class="phgrid">${sb.list.map(x => `<div class="phcell">${avatar(x, 'phbig')}<div class="phn">${esc(x.name)}</div>
+      <label class="btn small">${photoOf(x.name) ? 'Replace' : 'Upload'}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-phup="${esc(x.name)}" hidden></label>
+      ${photoOf(x.name) ? `<button class="linkbtn" data-phdel="${esc(x.name)}">Remove</button>` : ''}</div>`).join('')}</div>
+    <div class="ferr" id="phErr"></div></div>`;
+}
+let phWriting = Promise.resolve();
+function savePhotos() { const m = {...S.photos}; phWriting = phWriting.then(async () => { const {error} = await S.sb.from('extras').upsert({id:'photos', data:{m}}); if (error) throw error; }).catch(() => { const e = $('phErr'); if (e) e.textContent = 'Couldn’t save that photo. Try again.'; }); }
+async function uploadPhoto(name, file) {
+  const err = $('phErr'); if (err) err.textContent = '';
+  if (!file) return;
+  if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) { if (err) err.textContent = 'That file type isn’t supported. Use JPG, PNG, WebP or GIF.'; return; }
+  if (file.size > 20 * 1024 * 1024) { if (err) err.textContent = 'That image is over 20 MB.'; return; }
+  try {
+    if (err) err.textContent = 'Uploading…';
+    const ext = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'}[file.type];
+    const path = slug(name) + '-' + Date.now().toString(36) + '.' + ext;
+    const {error} = await S.sb.storage.from('photos').upload(path, file, {contentType: file.type, upsert: false});
+    if (error) throw error;
+    S.photos[slug(name)] = path; savePhotos(); renderAdmin();
+  } catch (e) {
+    const msg = 'Upload failed: ' + ((e && e.message) || 'try again') + '.';
+    const e2 = $('phErr'); if (e2) e2.textContent = msg;
+  }
+}
+let exWriting = Promise.resolve();
+function decide(id, ok) {
+  const x = pendingSugg().find(s => s.id === id); if (!x) return;
+  const ex = {items: JSON.parse(JSON.stringify(S.extras.items)), decided: {...S.extras.decided}};
+  ex.decided[id] = ok ? 'ok' : 'no';
+  if (ok) { (ex.items[x.sub] ||= []); if (!ex.items[x.sub].includes(x.name)) ex.items[x.sub].push(x.name); }
+  applyExtras(ex);
+  renderAdmin(); renderViews();
+  exWriting = exWriting.then(async () => { const r1 = await S.sb.from('extras').upsert({id:'main', data:ex}); if (r1.error) throw r1.error; await S.sb.from('suggestions').update({status: ok ? 'ok' : 'no'}).eq('id', +id); }).catch(() => flash('Couldn’t save that decision. Refresh and try again.', true));
+}
+function applyExtras(ex) {
+  S.extras = {items: ex.items || {}, decided: ex.decided || {}};
+  for (const sid in S.extras.items) if (SUBS[sid] && Array.isArray(S.extras.items[sid])) S.extras.items[sid].forEach(n => typeof n === 'string' && n.length <= 80 && addItem(SUBS[sid], n, true));
+}
+
+function render() {
+  if (S.mode === 'shared' && S.sub) refreshFor(S.sub);
+  renderNav();
+  if (S.view !== 'vote') clearAdv();
+  if (S.view === 'home') renderHome();
+  else if (S.view === 'vote') { if (!S.pair || S.forced || !SUBS[S.sub].byId[S.pair[0].id] || !SUBS[S.sub].byId[S.pair[1].id] || S.pairSub !== S.sub) { S.pairSub = S.sub; showPair(); } else { renderStats(); renderSuggest(); } }
+  else if (S.view === 'rank') renderRank();
+  else if (S.view === 'cmp') renderCmp();
+  else if (S.view === 'admin') renderAdmin();
+  else if (S.view === 'build') renderBuild();
+  else if (S.view === 'me') renderMe();
+}
+function refreshLive() {
+  renderViews();
+  if (S.view === 'home') renderHome();
+  else if (S.view === 'rank') renderRank();
+  else if (S.view === 'cmp') renderCmp();
+  else if (S.view === 'admin') renderAdmin();
+  else if (S.view === 'vote') renderStats();
+  else if (S.view === 'build') renderBuildCrowd();
+  else if (S.view === 'me') renderMe();
+}
+
+function flash(text, warn) { const b = $('banner'); b.innerHTML = text; b.className = 'banner show' + (warn ? ' warn' : ''); }
+
+
+// ================= Supabase backend =================
+const SB_URL = 'https://xseolrpcdprxndnlnjjv.supabase.co', SB_KEY = 'sb_publishable_yT3kCd0QZVqEVzaM0lgbKw_Kx70uSt8';
+S.synced = {}; S.loadedLists = new Set(); S.trend = null;
+const BIG = new Set();
+async function fetchAll(q) {
+  const out = []; let from = 0;
+  for (;;) { const {data, error} = await q().range(from, from + 999); if (error) throw error; out.push(...(data || [])); if (!data || data.length < 1000) break; from += 1000; }
+  return out;
+}
+function groupIds(subId) { const ss = srcSet(subId); return ss ? [...ss] : [subId]; }
+async function ensureCounts(subIds) {
+  if (S.mode !== 'shared') return false;
+  const need = [...new Set(subIds.flatMap(groupIds))].filter(id => !S.loadedLists.has(id));
+  if (!need.length) return false;
+  need.forEach(id => S.loadedLists.add(id));
+  try {
+    const rows = await fetchAll(() => S.sb.from('pair_counts').select('list_id,a,b,a_wins,b_wins').in('list_id', need));
+    rows.forEach(r => {
+      const k = `${r.list_id}:${r.a}:${r.b}`, o = {}; o[r.a] = r.a_wins; o[r.b] = r.b_wins;
+      const mv = S.synced[k]; if (mv && o[mv] > 0) o[mv]--;
+      S.others[k] = o;
+    });
+    return true;
+  } catch (e) { need.forEach(id => S.loadedLists.delete(id)); return false; }
+}
+async function refreshFor(subId) { if (await ensureCounts([subId])) { if (S.view === 'vote' && !S.locked && S.pair) { renderStats(); } else refreshLive(); } }
+async function loadTrending() {
+  try { const {data} = await S.sb.rpc('trending', {days: 7, lim: 30}); S.trend = data || []; await ensureCounts([...new Set(S.trend.map(r => r.list_id))].filter(id => SUBS[id])); if (S.view === 'home') renderHome(); } catch (e) {}
+}
+function logEvent(kind, list) { if (S.mode !== 'shared') return; S.sb.from('events').insert({user_id: S.uid, kind, list_id: list || null}).then(() => {}, () => {}); }
+
+let writing = false, dirty = false, profT = null;
+async function persist() {
+  if (S.mode === 'local') { try { localStorage.setItem('top10.mine', JSON.stringify(S.mine)); localStorage.setItem('top10.prog', JSON.stringify(S.prog)); localStorage.setItem('top10.vt', JSON.stringify(pruneVT())); } catch(e) {} return; }
+  if (S.mode !== 'shared') { dirty = true; return; }
+  clearTimeout(profT); profT = setTimeout(saveProfile, 1500);
+  if (writing) { dirty = true; return; }
+  writing = true;
+  do {
+    dirty = false;
+    const rows = Object.keys(S.mine).filter(k => S.mine[k] !== S.synced[k]).slice(0, 50).map(k => { const [list_id, a, b] = k.split(':'); return {user_id: S.uid, list_id, a, b, winner: S.mine[k]}; });
+    if (!rows.length) break;
+    const {error} = await S.sb.from('votes').upsert(rows, {onConflict: 'user_id,list_id,a,b'});
+    if (error) {
+      if (/Too many votes/.test(error.message || '')) { toast('Slow down a little. Votes are paused for a minute.'); await new Promise(r => setTimeout(r, 20000)); }
+      else await new Promise(r => setTimeout(r, 1500 + Math.random() * 1500));
+      dirty = true;
+    } else { rows.forEach(r => S.synced[`${r.list_id}:${r.a}:${r.b}`] = r.winner); if (Object.keys(S.mine).some(k => S.mine[k] !== S.synced[k])) dirty = true; }
+  } while (dirty);
+  writing = false;
+}
+async function saveProfile() { if (S.mode !== 'shared') return; try { await S.sb.from('profiles').upsert({user_id: S.uid, prog: JSON.parse(JSON.stringify(S.prog)), updated_at: new Date().toISOString()}); } catch (e) {} }
+
+function goLocal(note) {
+  S.mode = 'local';
+  try { const m = JSON.parse(localStorage.getItem('top10.mine')||'{}'); if (m && typeof m === 'object') S.mine = {...m, ...S.mine}; } catch(e) {}
+  try { loadProg(JSON.parse(localStorage.getItem('top10.prog')||'null')); } catch(e) {}
+  try { const v = JSON.parse(localStorage.getItem('top10.vt')||'{}'); if (v && typeof v === 'object') S.vt = {...v, ...S.vt}; } catch(e) {}
+  if (note) flash(note); render();
+}
+
+async function connect() {
+  if (!window.supabase || false) return goLocal('Preview mode: votes are saved on this device only.');
+  const sb = window.supabase.createClient(SB_URL, SB_KEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true}});
+  S.sb = sb;
+  try {
+    let {data: {session}} = await sb.auth.getSession();
+    if (!session) { const r = await sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
+    S.uid = session.user.id; S.email = session.user.email || null; S.anon = !!session.user.is_anonymous;
+    sb.auth.onAuthStateChange((ev, ses) => { if (ses && ses.user.id !== S.uid) location.reload(); else if (ses) { S.email = ses.user.email || null; S.anon = !!ses.user.is_anonymous; if (S.view === 'me') renderMe(); } });
+    // pull anything voted while offline/preview on this device
+    let local = {}; try { local = JSON.parse(localStorage.getItem('top10.mine') || '{}') || {}; } catch (e) {}
+    const mine = await fetchAll(() => sb.from('votes').select('list_id,a,b,winner,updated_at').eq('user_id', S.uid));
+    mine.forEach(r => { const k = `${r.list_id}:${r.a}:${r.b}`; S.mine[k] = r.winner; S.synced[k] = r.winner; S.vt[k] = Date.parse(r.updated_at); });
+    for (const k in local) if (!(k in S.mine) && typeof local[k] === 'string' && k.split(':').length === 3) S.mine[k] = local[k];
+    const {data: prof} = await sb.from('profiles').select('prog').eq('user_id', S.uid).maybeSingle();
+    if (prof) loadProg(prof.prog);
+    try { loadProg(JSON.parse(localStorage.getItem('top10.prog') || 'null')); } catch (e) {}
+    const {data: adm} = await sb.rpc('is_admin'); S.owner = adm === true; S.assets = S.owner;
+    const {data: ex} = await sb.from('extras').select('id,data');
+    (ex || []).forEach(r => { if (r.id === 'main') applyExtras(r.data || {}); if (r.id === 'photos') S.photos = (r.data && r.data.m) || {}; });
+    const {data: ms} = await sb.from('suggestions').select('id,list_id,name,status,created_at').eq('user_id', S.uid);
+    S.mySugg = (ms || []).map(r => ({id: String(r.id), sub: r.list_id, name: r.name, status: r.status, t: Date.parse(r.created_at)}));
+    if (S.owner) loadPending();
+    S.mode = 'shared';
+    await ensureCounts([S.sub]);
+    $('banner').className = 'banner';
+    if (Object.keys(S.mine).some(k => S.mine[k] !== S.synced[k])) persist();
+    try { localStorage.removeItem('top10.mine'); } catch (e) {}
+    S.pair = null; render();
+    loadTrending();
+    logEvent('visit');
+  } catch (e) {
+    goLocal('Couldn’t connect right now, so your votes are saved on this device. Refresh to try again.');
+  }
+}
+async function loadPending() {
+  const {data} = await S.sb.from('suggestions').select('id,list_id,name,user_id,created_at').eq('status', 'pending').order('created_at').limit(200);
+  const by = {}; (data || []).forEach(r => (by[r.user_id] ||= []).push({id: String(r.id), sub: r.list_id, name: r.name, t: Date.parse(r.created_at)}));
+  S.allSugg = Object.entries(by).map(([uid, list]) => ({uid, list}));
+  renderViews(); if (S.view === 'admin') renderAdmin();
+}
+// ---- account (Me page)
+function accountBox() {
+  if (S.mode !== 'shared') return '';
+  if (!S.anon && S.email) return `<div class="acct"><span>Signed in as <b>${esc(S.email)}</b></span><button class="linkbtn" data-signout="1">Sign out</button></div>`;
+  return `<div class="acct"><form id="acctForm"><span>Keep your votes on every device:</span><input id="acctEmail" type="email" placeholder="you@email.com" autocomplete="email"><button class="btn small primary" type="submit">Save with email</button><button class="linkbtn" type="button" data-signin="1">Already saved? Sign in</button></form><div class="ferr" id="acctErr"></div></div>`;
+}
+async function acctSubmit(signin) {
+  const email = ($('acctEmail').value || '').trim(), err = $('acctErr');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.className = 'ferr'; err.textContent = 'Enter a valid email first.'; return; }
+  err.className = 'fok'; err.textContent = 'Sending…';
+  const r = signin ? await S.sb.auth.signInWithOtp({email, options: {shouldCreateUser: false, emailRedirectTo: location.origin}})
+                   : await S.sb.auth.updateUser({email}, {emailRedirectTo: location.origin});
+  if (r.error) { err.className = 'ferr'; err.textContent = signin ? 'No GOATlist account uses that email yet. Use "Save with email" instead.' : (r.error.message || 'That didn’t work. Try again.'); return; }
+  err.textContent = signin ? 'Check your email for a sign-in link.' : 'Check your email and tap the link to confirm. Your votes stay with you.';
+}
+
+function go(view) { S.view = view; S.sharing = false; render(); window.scrollTo(0, 0); }
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,[data-home]'); if (!t) return;
+  const d = t.dataset;
+  if (d.home) go('home');
+  else if (d.view) go(d.view);
+  else if (d.go) go(d.go);
+  else if (d.cat) { S.cat = d.cat; S.sub = NAVCFG[S.cat] ? NAVCFG[S.cat].sides[0].tabs[0] : CATS.find(c => c.id === S.cat).subs[0].id; S.sharing = false; render(); }
+  else if (d.tile) { S.cat = d.tile; S.sub = NAVCFG[S.cat] ? NAVCFG[S.cat].sides[0].tabs[0] : CATS.find(c => c.id === S.cat).subs[0].id; go('vote'); }
+  else if (d.sub) { S.focus = null; S.sub = d.sub; S.sharing = false; render(); }
+  else if (d.rm) { S.rankMode = d.rm; renderRank(); }
+  else if (d.share) { S.sharing = d.share === '1'; renderRank(); }
+  else if (d.suggest) { S.showSuggest = d.suggest === '1'; renderSuggest(); if (S.showSuggest) { $('suggestBox').scrollIntoView({behavior:'smooth', block:'nearest'}); setTimeout(() => $('sgName')?.focus(), 200); } }
+  else if (d.fo) { const [sid, a, b] = d.fo.split('|'); const s = SUBS[sid]; S.sub = sid; S.cat = s.cat.id; S.forced = [s.byId[a], s.byId[b]]; S.pairSub = sid; S.view = 'vote'; renderNav(); showPair(); window.scrollTo(0, 0); }
+  else if (d.chip !== undefined) { S.chip[S.sub] = d.chip; S.pair = null; S.focus = null; render(); }
+  else if (d.side) { S.sub = NAVCFG[S.cat].sides.find(sd => sd.id === d.side).tabs[0]; S.sharing = false; S.pair = null; S.focus = null; render(); }
+  else if (d.fclear) { const k = SUBS[S.sub].fg || SUBS[S.sub].ath; S.filt[k] = {era:'', pos:''}; S.pair = null; S.focus = null; render(); }
+  else if (d.signout) { S.sb.auth.signOut().then(() => location.reload()); }
+  else if (d.signin) { acctSubmit(true); }
+  else if (d.pick) { const a = S.pick || (S.pick = []); const i = a.indexOf(d.pick); if (i >= 0) a.splice(i, 1); else a.push(d.pick); renderPicker(); }
+  else if (d.cont) { if (d.cont === 'edit') { S.pick = (contOf(S.sub) || []).filter(x => x !== '*'); S.pickFor = contKey(); delete S.prog.cont[contKey()]; S.pair = null; showPair(); }
+    else { (S.prog.cont ||= {})[contKey()] = d.cont === 'all' ? ['*'] : (S.pick || []).slice(); S.pick = []; $('reveal').innerHTML = ''; persist(); S.pair = null; showPair(); } window.scrollTo(0, 0); }
+  else if (d.gauntlet) { S.focus = d.gauntlet; $('reveal').innerHTML = ''; if (d.gogo) { S.pair = null; go('vote'); } else { clearAdv(); showPair(); } window.scrollTo(0, 0); }
+  else if (d.gexit) { S.focus = null; showPair(); }
+  else if (d.reveal) { if (d.reveal === '1') renderReveal(); else { $('reveal').innerHTML = ''; if (S.locked) showPair(); window.scrollTo(0, 0); } }
+  else if (d.nextlist) { const side = curSide(S.cat), i = side.tabs.indexOf(S.sub); S.sub = side.tabs[(i + 1) % side.tabs.length]; $('reveal').innerHTML = ''; S.pair = null; S.focus = null; render(); window.scrollTo(0, 0); }
+  else if (d.badd) buildAdd(d.badd);
+  else if (d.brem) buildRemove(+d.brem);
+  else if (d.bmove) { const [i, dir] = d.bmove.split(',').map(Number); buildMove(i, i + dir); }
+  else if (d.bclear) { S.prog.b[bKey()] = []; buildChanged(); }
+  else if (d.mesub) { S.sub = d.mesub; S.cat = SUBS[d.mesub].cat.id; go(d.mego); }
+  else if (d.phdel) { delete S.photos[slug(d.phdel)]; savePhotos(); renderAdmin(); }
+  else if (d.approve) decide(d.approve, true);
+  else if (d.reject) decide(d.reject, false);
+  else if (t.id === 'pickA') vote(0);
+  else if (t.id === 'pickB') vote(1);
+  else if (t.id === 'skipBtn') { S.last = pairKey(S.sub, S.pair[0].id, S.pair[1].id); showPair(); }
+  else if (t.id === 'nextBtn') showPair();
+  else if (t.id === 'pauseBtn') { clearAdv(); t.remove(); const b = $('advBar'); if (b) b.style.visibility = 'hidden'; }
+});
+document.addEventListener('input', e => { if (e.target.id === 'pSearch') { S.pq = e.target.value; renderPicker(); const el = $('pSearch'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); return; } if (e.target.id === 'bSearch') { S.bq = e.target.value; renderPool(); } });
+document.addEventListener('submit', e => { if (e.target.id === 'acctForm') { e.preventDefault(); acctSubmit(false); } });
+document.addEventListener('change', e => {
+  if (e.target.id === 'cmpSub') { S.sub = e.target.value; S.cat = SUBS[S.sub].cat.id; renderCmp(); return; }
+  if (e.target.id === 'phSel') { S.phSub = e.target.value; renderAdmin(); return; }
+  if (e.target.dataset && e.target.dataset.phup) { uploadPhoto(e.target.dataset.phup, e.target.files && e.target.files[0]); return; }
+  if (e.target.id === 'fDec') { S.filt[SUBS[S.sub].fg].era = e.target.value; S.pair = null; S.focus = null; render(); return; }
+  if (e.target.id === 'fEra' || e.target.id === 'fPos') { const sp = SUBS[S.sub].ath; S.filt[sp][e.target.id === 'fEra' ? 'era' : 'pos'] = e.target.value; S.pair = null; S.focus = null; render(); return; } if (e.target.id === 'cmpSel') { S.cmpWith = e.target.value; renderCmp(); } });
+document.addEventListener('keydown', e => {
+  if (S.view !== 'vote' || e.metaKey || e.ctrlKey || /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName)) return;
+  if (e.key === 'ArrowLeft') vote(0);
+  else if (e.key === 'ArrowRight') vote(1);
+  else if ((e.key === 'Enter' || e.key === ' ') && S.locked) { e.preventDefault(); showPair(); }
+});
+
+
+// ---------- game layer ----------
+const dayStr = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function streak() {
+  const set = new Set(S.prog.days || []); const d = new Date();
+  if (!set.has(dayStr(d))) d.setDate(d.getDate() - 1);
+  let n = 0; while (set.has(dayStr(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+const level = () => Math.floor(S.prog.xp / 250) + 1;
+function loadProg(p) {
+  if (!p || typeof p !== 'object') return;
+  const P = S.prog;
+  P.xp = Math.max(P.xp, +p.xp || 0);
+  P.days = [...new Set([...(P.days || []), ...(Array.isArray(p.days) ? p.days.filter(x => typeof x === 'string') : [])])].sort().slice(-400);
+  P.ht = Math.max(P.ht, +p.ht || 0);
+  P.best = Math.max(P.best || 0, +p.best || 0);
+  if (p.b && typeof p.b === 'object') for (const k in p.b) if (Array.isArray(p.b[k]) && !P.b[k]) P.b[k] = p.b[k].filter(x => typeof x === 'string').slice(0, 10);
+  P.bd = [...new Set([...(P.bd || []), ...(Array.isArray(p.bd) ? p.bd : [])])];
+  if (p.cont && typeof p.cont === 'object') { P.cont = P.cont || {}; for (const k in p.cont) if (Array.isArray(p.cont[k]) && !P.cont[k]) P.cont[k] = p.cont[k].filter(x => typeof x === 'string').slice(0, 200); }
+}
+function completedLists() {
+  const seen = {};
+  for (const k in S.mine) { const [s2, a, b] = k.split(':'); (seen[s2] ||= new Set()).add(a); seen[s2].add(b); }
+  return Object.keys(seen).filter(sid => SUBS[sid] && SUBS[sid].list.every(x => seen[sid].has(x.id)));
+}
+const BADGES = [
+  {id:'v100', name:'Century', desc:'Cast 100 votes', t:() => S.prog.xp >= 1000},
+  {id:'v500', name:'Veteran', desc:'Cast 500 votes', t:() => S.prog.xp >= 5000},
+  {id:'v1000', name:'Legend', desc:'Cast 1,000 votes', t:() => S.prog.xp >= 10000},
+  {id:'v5000', name:'GOAT voter', desc:'Cast 5,000 votes', t:() => S.prog.xp >= 50000},
+  {id:'s7', name:'On fire', desc:'7-day streak', t:() => (S.prog.best || 0) >= 7},
+  {id:'s30', name:'Locked in', desc:'30-day streak', t:() => (S.prog.best || 0) >= 30},
+  {id:'s100', name:'Unstoppable', desc:'100-day streak', t:() => (S.prog.best || 0) >= 100},
+  {id:'h10', name:'Contrarian', desc:'10 hot takes (with 20% or less)', t:() => S.prog.ht >= 10},
+  {id:'h50', name:'Hot take artist', desc:'50 hot takes', t:() => S.prog.ht >= 50},
+  {id:'c1', name:'Completionist', desc:'Vote on every option in a list', t:() => completedLists().length >= 1},
+  {id:'c5', name:'Collector', desc:'Complete 5 lists', t:() => completedLists().length >= 5},
+  {id:'c15', name:'Encyclopedia', desc:'Complete 15 lists', t:() => completedLists().length >= 15}
+];
+function checkBadges() {
+  const P = S.prog; const had = new Set(P.bd || []);
+  const fresh = BADGES.filter(b => !had.has(b.id) && b.t());
+  if (!fresh.length) return;
+  P.bd = [...had, ...fresh.map(b => b.id)];
+  toast(`Badge unlocked: <strong>${esc(fresh[0].name)}</strong> &middot; ${esc(fresh[0].desc)}`);
+}
+let toastT = null;
+function toast(html) {
+  const t = $('toast'); t.innerHTML = html; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ---------- Me page ----------
+function renderMe() {
+  const P = S.prog, earned = new Set(P.bd || []);
+  const cards = [];
+  CATS.filter(c => !c.hidden).forEach(c => c.subs.forEach(sb => {
+    const save = S.sub; S.sub = sb.id; const f = finder(sb.id); S.sub = save;
+    const list = f.O.filter(x => f.games[x.id] > 0).slice(0, 10);
+    if (list.length < 3) return;
+    cards.push(`<div class="mecard" style="--c:${sb.c}">
+      <div class="mehead"><div><b>${esc(sb.label)}</b><small>${f.locked ? 'Locked in' : Math.round(f.prog * 100) + '% found'}</small></div>
+        <div class="mebtns"><button class="btn small" data-mesub="${sb.id}" data-mego="vote">${f.locked ? 'Refine' : 'Keep going'}</button></div></div>
+      <ol>${list.map((x, i) => `<li><span>${i + 1}</span>${esc(x.name)}</li>`).join('')}</ol></div>`);
+  }));
+  const got = BADGES.filter(b => earned.has(b.id));
+  $('meView').innerHTML = accountBox() + `
+    <div class="meline"><span><b>Level ${level()}</b> &middot; ${P.xp.toLocaleString()} XP</span><span><b>${streak()}</b>-day streak</span><span><b>${Object.keys(S.mine).length}</b> votes</span><span><b>${P.ht}</b> hot takes</span></div>
+    <div class="badgeline">${got.length ? got.map(b => `<span class="bpill" title="${esc(b.desc)}">${esc(b.name)}</span>`).join('') : '<span class="bnone">No badges yet. Your first comes at 100 votes.</span>'}<span class="bnone">${got.length}/${BADGES.length} badges</span></div>
+    <div class="sectitle"><h2>My <span style="color:var(--purple2)">top 10s</span></h2><small>${cards.length} list${cards.length === 1 ? '' : 's'}</small></div>
+    ${cards.length ? `<div class="megrid">${cards.join('')}</div>` : `<div class="empty">Start voting and your top 10s show up here.<br><button class="btn primary" data-go="vote">Find your top 10</button></div>`}
+`;
+}
+// ---------- Build mode ----------
+const bKey = () => bKey0() + (S.chip[S.sub] ? '#' + S.chip[S.sub] : '');
+const bKey0 = () => { const fg = SUBS[S.sub].fg; if (fg) return [S.sub, S.filt[fg].era].filter(Boolean).join('|'); const sp = SUBS[S.sub].ath; if (!sp || sp === 'all') return S.sub; const f = S.filt[sp]; return [S.sub, f.era, f.pos].filter(Boolean).join('|'); };
+const myBuild = () => (S.prog.b[bKey()] ||= []).filter(id => SUBS[S.sub].byId[id]);
+let buildSaveT = null;
+function buildChanged() {
+  S.prog.b[bKey()] = myBuild();
+  renderBuild();
+  clearTimeout(buildSaveT); buildSaveT = setTimeout(persist, 700);
+}
+function buildAdd(id, at) {
+  const b = myBuild().filter(x => x !== id);
+  if (b.length >= 10 && at == null) { toast('Your top 10 is full. Remove one first.'); return; }
+  if (at == null || at > b.length) b.push(id); else b.splice(at, 0, id);
+  S.prog.b[bKey()] = b.slice(0, 10); buildChanged();
+}
+function buildRemove(i) { const b = myBuild(); b.splice(i, 1); S.prog.b[bKey()] = b; buildChanged(); }
+function buildMove(i, j) { const b = myBuild(); if (j < 0 || j >= b.length) return; const [x] = b.splice(i, 1); b.splice(j, 0, x); S.prog.b[bKey()] = b; buildChanged(); }
+
+function renderBuild() {
+  const sub = SUBS[S.sub], b = myBuild();
+  const crowd = viewOrder(S.sub, 'global'), cRank = Object.fromEntries(crowd.map((x, i) => [x.id, crowd[i].g ? i + 1 : null]));
+  const slots = [];
+  for (let i = 0; i < 10; i++) {
+    const it = b[i] ? sub.byId[b[i]] : null;
+    slots.push(it ? `<div class="slot full" draggable="true" data-drag="${it.id}" data-slot="${i}" style="--c:${it.c}">
+        <span class="sn">${i + 1}</span>${avatar(it, 'dot2')}<span class="snm">${esc(it.name)}</span>
+        <span class="cr">${cRank[it.id] ? 'Crowd #' + cRank[it.id] : 'Unranked'}</span>
+        <span class="sbtns"><button data-bmove="${i},-1" aria-label="Move up">&uarr;</button><button data-bmove="${i},1" aria-label="Move down">&darr;</button><button data-brem="${i}" aria-label="Remove">&times;</button></span></div>`
+      : `<div class="slot" data-slot="${i}"><span class="sn">${i + 1}</span><span class="ph">Drag or tap an option</span></div>`);
+  }
+  $('buildView').innerHTML = `
+    <div class="rankhead"><h2>Build your <span>top 10</span>: ${esc(filterLabel(S.sub))}</h2>
+      <div class="rh-right">${b.length ? '<button class="btn small" data-bclear="1">Clear</button>' : ''}</div></div>
+    <div class="buildgrid">
+      <div><div class="slots" id="slots">${slots.join('')}</div><div id="buildCrowd"></div></div>
+      <div class="poolwrap"><input id="bSearch" class="search" placeholder="Search ${esc(sub.label)}" value="${esc(S.bq)}" autocomplete="off"><div class="pool" id="pool" data-pool="1"></div></div>
+    </div>`;
+  renderPool(); renderBuildCrowd();
+}
+function renderPool() {
+  const sub = SUBS[S.sub], b = new Set(myBuild()), q = S.bq.trim().toLowerCase();
+  const items = sub.list.filter(x => inFilter(S.sub, x) && !b.has(x.id) && (!q || x.name.toLowerCase().includes(q)));
+  const el = $('pool'); if (!el) return;
+  el.innerHTML = items.length ? items.map(x => `<button class="pitem" draggable="true" data-drag="${x.id}" data-badd="${x.id}" style="--c:${x.c}">${avatar(x, 'dot2')}${esc(x.name)}</button>`).join('')
+    : `<div class="ph" style="padding:14px">${q ? 'No matches.' : 'Everything is in your top 10.'}</div>`;
+}
+function renderBuildCrowd() {
+  const el = $('buildCrowd'); if (!el) return;
+  const sub = SUBS[S.sub], b = myBuild();
+  const crowd = viewOrder(S.sub, 'global').filter(x => x.g > 0).slice(0, 10);
+  if (!b.length) { el.innerHTML = ''; return; }
+  const cset = new Set(crowd.map(x => x.id)), overlap = b.filter(id => cset.has(id)).length;
+  el.innerHTML = `<div class="panel" style="margin-top:16px">
+    <h3>You vs the crowd</h3>
+    ${crowd.length ? `<div class="match" style="margin-bottom:12px"><div class="mcard"><div class="big">${overlap}/${Math.min(10, b.length)}</div><div class="lbl">of your picks are in the crowd's top 10</div></div></div>
+      <div class="rest-title">Crowd's top 10</div><ol class="clist">${crowd.map((x, i) => `<li class="${b.includes(x.id) ? 'hit' : ''}"><span>${i + 1}</span>${esc(x.name)}</li>`).join('')}</ol>`
+      : `<div style="color:var(--muted);font-size:14px">No crowd votes in ${esc(sub.label)} yet.</div>`}
+  </div>`;
+}
+let dragId = null;
+document.addEventListener('dragstart', e => { const t = e.target.closest('[data-drag]'); if (!t) return; dragId = t.dataset.drag; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) {} });
+document.addEventListener('dragover', e => { if (dragId && e.target.closest('[data-slot],[data-pool]')) { e.preventDefault(); const s2 = e.target.closest('[data-slot]'); document.querySelectorAll('.slot.over').forEach(x => x.classList.remove('over')); if (s2) s2.classList.add('over'); } });
+document.addEventListener('drop', e => {
+  const s2 = e.target.closest('[data-slot]'), pool = e.target.closest('[data-pool]');
+  if (!dragId || (!s2 && !pool)) return; e.preventDefault();
+  const id = dragId; dragId = null;
+  if (pool) { const i = myBuild().indexOf(id); if (i >= 0) buildRemove(i); return; }
+  const at = +s2.dataset.slot, b = myBuild(), from = b.indexOf(id);
+  if (from >= 0) buildMove(from, Math.min(at, b.length - 1)); else buildAdd(id, Math.min(at, b.length));
+});
+document.addEventListener('dragend', () => { dragId = null; document.querySelectorAll('.slot.over').forEach(x => x.classList.remove('over')); });
+
+function shareImage(title, names) {
+  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, W, H); grd.addColorStop(0, '#1c1533'); grd.addColorStop(0.7, '#0b0b10'); g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#f4f4f7'; g.font = '700 64px "Bebas Neue", Inter, sans-serif'; g.fillText('GOAT', 80, 130); const w = g.measureText('GOAT').width; g.fillStyle = '#8b6dff'; g.fillText('list', 80 + w, 130);
+  g.fillStyle = '#f4f4f7'; g.font = '700 58px Inter, sans-serif';
+  const words = title.split(' '); let line = '', y = 240; words.forEach(wd => { const t = line ? line + ' ' + wd : wd; if (g.measureText(t).width > W - 160) { g.fillText(line, 80, y); y += 70; line = wd; } else line = t; }); g.fillText(line, 80, y);
+  y += 80;
+  names.slice(0, 10).forEach((n, i) => { g.fillStyle = i === 0 ? '#f5c542' : '#8b6dff'; g.font = '700 54px "Bebas Neue", Inter, sans-serif'; g.fillText(String(i + 1), 80, y + i * 88);
+    g.fillStyle = '#f4f4f7'; g.font = '600 46px Inter, sans-serif'; let nm = n; while (g.measureText(nm).width > W - 260 && nm.length > 4) nm = nm.slice(0, -2); g.fillText(nm === n ? n : nm + '…', 170, y + i * 88); });
+  g.fillStyle = '#8d8d9c'; g.font = '500 34px Inter, sans-serif'; g.fillText('Make yours at ' + location.host, 80, H - 80);
+  c.toBlob(async blob => {
+    const file = new File([blob], 'my-goatlist.png', {type: 'image/png'});
+    if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: 'My GOATlist'}); return; } catch (e) {} }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'my-goatlist.png'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }, 'image/png');
+}
+
+render();
+connect();
+</script>
+</body>
+</html>
