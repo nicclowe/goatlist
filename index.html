@@ -1030,6 +1030,64 @@ FACEOFFS.splice(3, 0, ['soc','Lionel Messi','Cristiano Ronaldo'], ['nfl','Tom Br
     "Didier Drogba=Forwards=3=C1|Samuel Eto'o=Forwards=3=C3|Karim Benzema=Forwards=3=B1,C5|Luis Suarez=Forwards=3=C1|Neymar=Forwards=3=C1|Arjen Robben=Forwards=3=C1|Antoine Griezmann=Forwards=3,4=W1|Toni Kroos=Midfielders=3=W1,C6|Sergio Busquets=Midfielders=3=W1,C3|John Terry=Defenders=3=C1|Rio Ferdinand=Defenders=3=C1|Dani Alves=Defenders=3=C3|Marcelo=Defenders=3=C5|Thiago Silva=Defenders=3=C1|Petr Cech=Goalkeepers=3=C1|Edwin van der Sar=Goalkeepers=2,3=C2|" +
     "Harry Kane=Forwards=3,4=B1|Ousmane Dembele=Forwards=3,4=B1,C1|Vinicius Junior=Forwards=4=C2|Lamine Yamal=Forwards=4=|Rodri=Midfielders=4=B1,C1|Jude Bellingham=Midfielders=4=C1|Pedri=Midfielders=4=|Trent Alexander-Arnold=Defenders=3,4=C1|Thibaut Courtois=Goalkeepers=3,4=C1|Alisson=Goalkeepers=3,4=C1");
 })();
+
+// ---------- v13: current stars, mobile games, what's hot now; taste filters removed ----------
+(function () {
+  const ALL = {}; CATS.forEach(c => c.subs.forEach(s => ALL[s.id] = s));
+  const add = (id, str, union, tagFn) => {
+    const s = ALL[id]; const have = new Set(s.items.split('|'));
+    const fresh = str.split('|').map(x => x.trim()).filter(n => n && !have.has(n));
+    fresh.forEach(n => have.add(n)); if (fresh.length) s.items += '|' + fresh.join('|');
+    if (union) { const u = ALL[union]; const uh = new Set(u.items.split('|')); u.cmap = u.cmap || {}; u.tagOf = u.tagOf || {};
+      fresh.forEach(n => { if (!uh.has(n)) { uh.add(n); u.items += '|' + n; u.cmap[n] = s.c; u.tagOf[n] = tagFn ? tagFn(s) : s.name; } }); }
+    return fresh;
+  };
+  // taste filters out
+  delete CHIP['fastfood']; delete CHIP['snacks'];
+
+  // team colours for teams not yet in the palette
+  Object.assign(TEAMC, {CHA:'#00788C', SJS:'#006D75', ANA:'#F47A38', WPG:'#041E42', FLA:'#C8102E', OTT:'#C52032', MINh:'#154734', VGK:'#B4975A', NYR:'#0038A8', DALh:'#006847', VAN:'#00205B', UTAh:'#69B3E7', CHC:'#0E3386', HOUb:'#EB6E1F', TB:'#8FBCE6', KC:'#004687', BAL:'#DF4601', CIN:'#C6011F', MILb:'#FFC52F', NYM:'#FF5910', TORb:'#134A8E', SD:'#FFC425', PHIb:'#E81828'});
+  Object.assign(TEAMN, {CHA:'Hornets', SJS:'Sharks', ANA:'Ducks', WPG:'Jets', FLA:'Panthers', OTT:'Senators', MINh:'Wild', VGK:'Golden Knights', NYR:'Rangers', DALh:'Stars', VAN:'Canucks', UTAh:'Mammoth', CHC:'Cubs', HOUb:'Astros', TB:'Rays', KC:'Royals', BAL:'Orioles', CIN:'Reds', MILb:'Brewers', NYM:'Mets', TORb:'Blue Jays', SD:'Padres', PHIb:'Phillies'});
+
+  // Name=TEAM=position=era1,era2
+  const stars = (sp, str) => { const s = ALL[sp], have = new Set(s.items.split('|'));
+    str.split('|').forEach(r => { const [n, t, p, e] = r.split('='); TEAMOF[n] = t; TAGS[sp][n] = {pos:[p], era:e.split(',')}; if (!have.has(n)) { have.add(n); s.items += '|' + n; } }); };
+  stars('nba', "Cooper Flagg=DAL=SF=2020s|Tyrese Maxey=PHI=PG=2020s|Cade Cunningham=DET=PG=2020s|Alperen Sengun=HOU=C=2020s|Jalen Johnson=ATL=PF=2020s|Scottie Barnes=TOR=PF=2020s|Evan Mobley=CLE=PF=2020s|Chet Holmgren=OKC=C=2020s|Jalen Williams=OKC=SF=2020s|Paolo Banchero=ORL=PF=2020s|Franz Wagner=ORL=SF=2020s|LaMelo Ball=CHA=PG=2020s|Tyrese Haliburton=IND=PG=2020s|De'Aaron Fox=SAC=PG=2010s,2020s|Ja Morant=MEM=PG=2020s|Zion Williamson=NOP=PF=2020s|Trae Young=ATL=PG=2020s|Jamal Murray=DEN=PG=2010s,2020s|Pascal Siakam=TOR=PF=2010s,2020s|Bam Adebayo=MIA=C=2010s,2020s|Karl-Anthony Towns=MIN=C=2010s,2020s|Domantas Sabonis=SAC=C=2020s|Jaylen Brown=BOS=SG=2010s,2020s|Jaren Jackson Jr.=MEM=PF=2020s|Derrick White=BOS=SG=2020s|Darius Garland=CLE=PG=2020s|Austin Reaves=LAL=SG=2020s|Amen Thompson=HOU=SF=2020s|Stephon Castle=SAS=SG=2020s|Deni Avdija=POR=SF=2020s|Jalen Duren=DET=C=2020s|Desmond Bane=MEM=SG=2020s|Mikal Bridges=NYK=SF=2020s");
+  stars('nhl', "Macklin Celebrini=SJS=C=2010s-now|Lane Hutson=MTL=D=2010s-now|Cole Caufield=MTL=Wingers=2010s-now|Matthew Schaefer=NYI=D=2010s-now|Leo Carlsson=ANA=C=2010s-now|Connor Bedard=CHIh=C=2010s-now|Kyle Connor=WPG=Wingers=2010s-now|Jack Hughes=NJD=C=2010s-now|Quinn Hughes=VAN=D=2010s-now|David Pastrnak=BOSh=Wingers=2010s-now|Matthew Tkachuk=FLA=Wingers=2010s-now|Brady Tkachuk=OTT=Wingers=2010s-now|Aleksander Barkov=FLA=C=2010s-now|Sam Reinhart=FLA=C=2010s-now|Mitch Marner=TORh=Wingers=2010s-now|Kirill Kaprizov=MINh=Wingers=2010s-now|Jack Eichel=VGK=C=2010s-now|Rasmus Dahlin=BUF=D=2010s-now|Adam Fox=NYR=D=2010s-now|Igor Shesterkin=NYR=G=2010s-now|Wyatt Johnston=DALh=C=2010s-now|Martin Necas=COL=Wingers=2010s-now|William Nylander=TORh=Wingers=2010s-now|Jake Sanderson=OTT=D=2010s-now|Mikko Rantanen=COL=Wingers=2010s-now|Artemi Panarin=NYR=Wingers=2010s-now|Nick Suzuki=MTL=C=2010s-now|Tim Stutzle=OTT=C=2010s-now|Moritz Seider=DETh=D=2010s-now|Evan Bouchard=EDM=D=2010s-now|Jason Robertson=DALh=Wingers=2010s-now|Clayton Keller=UTAh=Wingers=2010s-now");
+  stars('mlb', "Pete Crow-Armstrong=CHC=Outfield=2000s-now|Yordan Alvarez=HOUb=C and DH=2000s-now|Junior Caminero=TB=Infield=2000s-now|Bobby Witt Jr.=KC=Infield=2000s-now|Cal Raleigh=SEA=C and DH=2000s-now|Gunnar Henderson=BAL=Infield=2000s-now|Elly De La Cruz=CIN=Infield=2000s-now|Paul Skenes=PITb=Pitchers=2000s-now|Tarik Skubal=DETb=Pitchers=2000s-now|Jacob Misiorowski=MILb=Pitchers=2000s-now|Cam Schlittler=NYY=Pitchers=2000s-now|Juan Soto=NYM=Outfield=2000s-now|Vladimir Guerrero Jr.=TORb=Infield=2000s-now|Julio Rodriguez=SEA=Outfield=2000s-now|Corbin Carroll=ARI=Outfield=2000s-now|Fernando Tatis Jr.=SD=Outfield=2000s-now|Ronald Acuna Jr.=ATLb=Outfield=2000s-now|Jackson Chourio=MILb=Outfield=2000s-now|Kevin McGonigle=DETb=Infield=2000s-now|Brice Turang=MILb=Infield=2000s-now|Mookie Betts=LAD=Outfield=2000s-now|Jose Ramirez=CLEb=Infield=2000s-now|Kyle Tucker=HOUb=Outfield=2000s-now|Garrett Crochet=BOSb=Pitchers=2000s-now|Cristopher Sanchez=PHIb=Pitchers=2000s-now|Yoshinobu Yamamoto=LAD=Pitchers=2000s-now|Francisco Lindor=NYM=Infield=2000s-now|Pete Alonso=NYM=Infield=2000s-now|Bryce Harper=PHIb=Infield=2000s-now|Manny Machado=SD=Infield=2000s-now|Kyle Schwarber=PHIb=C and DH=2000s-now|James Wood=WSHb=Outfield=2000s-now|Nick Kurtz=OAK=Infield=2000s-now|Roman Anthony=BOSb=Outfield=2000s-now|Jackson Merrill=SD=Outfield=2000s-now|Zack Wheeler=PHIb=Pitchers=2000s-now|Logan Webb=SF=Pitchers=2000s-now|Chris Sale=ATLb=Pitchers=2000s-now");
+  // current NFL + soccer stars (2020s)
+  const cur = (sp, str) => { const s = ALL[sp], have = new Set(s.items.split('|'));
+    str.split('|').forEach(r => { const [n, p, acc] = r.split('='); if (have.has(n)) return; have.add(n); s.items += '|' + n; TAGS[sp][n] = {pos:[p], era:['2020s']};
+      if (acc) { const o = {lg:sp, hof:false, v:{}}; acc.split(',').forEach(t => o.v[t[0]] = +t.slice(1)); ACC[n] = o; } }); };
+  cur('nfl', "Jayden Daniels=QB|C.J. Stroud=QB|Drake Maye=QB|Brock Purdy=QB|Bijan Robinson=RB|Jahmyr Gibbs=RB|Ashton Jeanty=RB|Puka Nacua=WR and TE|CeeDee Lamb=WR and TE|Amon-Ra St. Brown=WR and TE|Malik Nabers=WR and TE|Jaxon Smith-Njigba=WR and TE|Brock Bowers=WR and TE|Trey McBride=WR and TE|George Kittle=WR and TE|Nick Bosa=Defense=D1|Aidan Hutchinson=Defense|Will Anderson Jr.=Defense|Fred Warner=Defense|Sauce Gardner=Defense|Patrick Surtain II=Defense=D1");
+  cur('soc', "Cole Palmer=Midfielders|Bukayo Saka=Forwards|Declan Rice=Midfielders|Florian Wirtz=Midfielders|Jamal Musiala=Midfielders|Michael Olise=Forwards|Raphinha=Forwards|Lautaro Martinez=Forwards|Alexander Isak=Forwards|Khvicha Kvaratskhelia=Forwards=C1|Desire Doue=Forwards=C1|Vitinha=Midfielders=C1|Federico Valverde=Midfielders=C2|Bruno Fernandes=Midfielders|Martin Odegaard=Midfielders|Phil Foden=Midfielders=C1|Joshua Kimmich=Midfielders=C1|Achraf Hakimi=Defenders=C1|William Saliba=Defenders|Nuno Mendes=Defenders=C1|Gianluigi Donnarumma=Goalkeepers=C1|Son Heung-min=Forwards");
+  // a few current faces in All athletes
+  const aa = ALL['ath-all']; const ah = new Set(aa.items.split('|'));
+  "Tyrese Maxey|Cade Cunningham|Cooper Flagg|Jaylen Brown|Macklin Celebrini|Matthew Tkachuk|Bobby Witt Jr.|Paul Skenes|Tarik Skubal|Cal Raleigh|Pete Crow-Armstrong|Juan Soto".split('|').forEach(n => { if (!ah.has(n)) aa.items += '|' + n; });
+
+  // what's hot now: music, movies, shows, food
+  add('rap', "Central Cee|Ken Carson|Don Toliver|Yeat|Sexyy Red|Ice Spice|Latto|Lil Tecca|BigXthaPlug|Destroy Lonely", 'music-all');
+  add('pop', "Olivia Dean|sombr|Alex Warren|KATSEYE|Rose|Addison Rae|The Marias|Laufey", 'music-all');
+  add('country', "Zach Top|Parker McCollum|Koe Wetzel|Gavin Adcock|Warren Zeiders", 'music-all');
+  add('rock', "Sleep Token|Turnstile|Ghost|Bring Me the Horizon|Bad Omens|Royal Blood", 'music-all');
+  add('rnb', "Mariah the Scientist|Coco Jones|Sabrina Claudio|Tems", 'music-all');
+  add('m-action', "Superman|F1|Thunderbolts*|Mission: Impossible - The Final Reckoning|Avatar: Fire and Ash|The Odyssey|Spider-Man: Brand New Day|Project Hail Mary", 'mov-all');
+  add('m-comedy', "A Minecraft Movie|Happy Gilmore 2|The Naked Gun", 'mov-all');
+  add('m-drama', "Marty Supreme|Hamnet|Michael|Wicked|Wicked: For Good|Sentimental Value", 'mov-all');
+  add('m-horror', "28 Years Later|Final Destination Bloodlines|Frankenstein|Companion", 'mov-all');
+  add('m-animated', "Zootopia 2|Toy Story 5|The Super Mario Galaxy Movie|Elio", 'mov-all');
+  add('s-drama', "The Diplomat|The Gilded Age|A Knight of the Seven Kingdoms|Paradise|Your Friends & Neighbors|The Testaments|Task|Adolescence|Wednesday|Alien: Earth", 'show-all');
+  add('s-comedy', "The Studio|The Chair Company|Rooster|Wonder Man|Margo's Got Money Troubles", 'show-all');
+  add('snacks', "Dubai Chocolate|Freeze-Dried Candy|Pickle Chips|Hot Honey Chips|Matcha Kit Kat");
+  add('sodas', "Prebiotic soda|Dirty soda");
+
+  // Mobile games + Mobile platform chip
+  const P = 'PlayStation', X = 'Xbox', N = 'Nintendo', C = 'PC', M = 'Mobile';
+  const g = CHIP['games']; if (!g.opts.includes(M)) g.opts.push(M);
+  ['Minecraft','Fortnite','Among Us','Stardew Valley','Tetris','Call of Duty: Black Ops','EA Sports FC','Apex Legends'].forEach(n => { if (g.tags[n] && !g.tags[n].includes(M)) g.tags[n] = [...g.tags[n], M]; });
+  const MG = {"Roblox":[X,P,C,M],"Clash of Clans":[M],"Clash Royale":[M],"Brawl Stars":[M],"Candy Crush Saga":[M],"Pokemon GO":[M],"Subway Surfers":[M],"Temple Run":[M],"Angry Birds":[M],"Fruit Ninja":[M],"Flappy Bird":[M],"Doodle Jump":[M],"Cut the Rope":[M],"Hay Day":[M],"8 Ball Pool":[M],"Free Fire":[M],"PUBG Mobile":[M],"Call of Duty: Mobile":[M],"Honor of Kings":[M],"Mobile Legends: Bang Bang":[M],"Royal Match":[M],"Monopoly Go!":[M],"Block Blast!":[M],"Whiteout Survival":[M],"Genshin Impact":[P,C,M],"Plants vs. Zombies":[C,M],"Geometry Dash":[C,M],"Marvel Snap":[C,M],"Pokemon TCG Pocket":[M]};
+  add('games', Object.keys(MG).join('|')).forEach(n => g.tags[n] = MG[n]);
+})();
 const slug = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'x';
 const SUBS = {};
 CATS.forEach(c => c.subs.forEach(s => {
