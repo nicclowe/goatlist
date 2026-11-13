@@ -1892,7 +1892,10 @@ async function acctSubmit(signin) {
   err.className = 'fok'; err.textContent = 'Sending…';
   const r = signin ? await S.sb.auth.signInWithOtp({email, options: {shouldCreateUser: false, emailRedirectTo: location.origin}})
                    : await S.sb.auth.updateUser({email}, {emailRedirectTo: location.origin});
-  if (r.error) { err.className = 'ferr'; err.textContent = signin ? 'No GOATlist account uses that email yet. Use "Save with email" instead.' : (r.error.message || 'That didn’t work. Try again.'); return; }
+  if (r.error) { const m = (r.error.message || '') + ' ' + (r.error.code || ''); err.className = 'ferr';
+    err.textContent = /rate|limit|too many|security purposes/i.test(m) ? 'Too many emails sent in a short time. Wait about an hour, then try once.'
+      : signin && /signup|not allowed|not found|user/i.test(m) ? 'No GOATlist account uses that email yet. Use "Save with email" instead.'
+      : 'That didn’t work: ' + (r.error.message || 'try again.'); return; }
   err.textContent = signin ? 'Check your email for a sign-in link.' : 'Check your email and tap the link to confirm. Your votes stay with you.';
 }
 
